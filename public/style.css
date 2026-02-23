@@ -27,7 +27,7 @@ html {
 
 /* Personalización del Hero */
 #inicio {
-    background: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.8)), 
+    background: linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.4)), 
                 url('imagen/jerry.png');
     background-size: cover;
     background-position: center;
