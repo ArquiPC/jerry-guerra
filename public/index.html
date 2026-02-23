@@ -3,85 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jerry Guerra | Refrigeración Profesional</title>
+    <title>Jerry Guerra | Multiservicios Profesionales</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body>
 
-    <header class="bg-slate-800 text-white py-12 text-center">
-        <h1 class="text-4xl font-bold text-white">Jerry Guerra</h1>
-        <p class="text-xl mt-2 text-orange-400">Servicio técnico de refrigeración doméstica</p>
-    </header>
+    <nav class="bg-slate-900 text-white fixed w-full z-50 shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <span class="text-xl font-bold text-orange-500">JERRY GUERRA</span>
+            <div class="space-x-6 hidden md:flex">
+                <a href="#inicio" class="hover:text-orange-400">Inicio</a>
+                <a href="#servicios" class="hover:text-orange-400">Servicios</a>
+                <a href="#trabajos" class="hover:text-orange-400">Trabajos</a>
+                <a href="#contacto" class="hover:text-orange-400">Contacto</a>
+            </div>
+        </div>
+    </nav>
 
-    <section class="max-w-4xl mx-auto p-8">
-        <h2 class="text-2xl font-semibold border-b-4 border-orange-500 inline-block mb-6 text-slate-800">Mis Trabajos Realizados</h2>
-        
-        <div id="galeria" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <p id="mensaje-estado" class="col-span-full text-center py-10 text-gray-500 italic">Cargando galería...</p>
+    <section id="inicio" class="h-screen flex items-center justify-center text-center bg-slate-800 text-white px-4">
+        <div>
+            <h1 class="text-5xl md:text-7xl font-extrabold mb-4">Soluciones Integrales</h1>
+            <p class="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto">Experto en Refrigeración, Construcción y Plomería. Calidad garantizada en cada proyecto.</p>
+            <a href="#servicios" class="mt-8 inline-block bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-8 rounded-full transition">Ver mis servicios</a>
         </div>
     </section>
 
-    <footer class="bg-white py-12 text-center border-t mt-10">
-        <p class="mb-4 font-bold text-lg">¿Tu nevera o aire no enfría?</p>
-        <a href="https://wa.me/584120000000?text=Hola%20Jerry,%20necesito%20un%20servicio%20técnico" 
-           target="_blank"
-           class="bg-green-600 text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-green-700 transition transform hover:scale-105 inline-block">
-           Contactar por WhatsApp
-        </a>
-    </footer>
+    <section id="servicios" class="py-20 bg-white">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <h2 class="text-4xl font-bold mb-12">Nuestros Servicios</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="p-8 bg-blue-50 rounded-2xl border-b-4 border-blue-500 shadow-sm">
+                    <i class="fas fa-snowflake text-4xl text-blue-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">Refrigeración</h3>
+                    <p class="text-gray-600">Mantenimiento y reparación de neveras, aires acondicionados y cavas industriales.</p>
+                </div>
+                <div class="p-8 bg-orange-50 rounded-2xl border-b-4 border-orange-500 shadow-sm">
+                    <i class="fas fa-tools text-4xl text-orange-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">Construcción</h3>
+                    <p class="text-gray-600">Remodelaciones, albañilería, pintura y acabados de primera calidad.</p>
+                </div>
+                <div class="p-8 bg-green-50 rounded-2xl border-b-4 border-green-500 shadow-sm">
+                    <i class="fas fa-faucet text-4xl text-green-500 mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">Plomería</h3>
+                    <p class="text-gray-600">Instalación de tuberías, reparación de filtraciones y sanitarios.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <script>
-        // CONFIGURACIÓN OFICIAL
-        const supabaseUrl = 'https://lrjsideqdmiekflpught.supabase.co';
-        const supabaseKey = 'sb_publishable_tjGfyh7Eq8gi6-8xthjGtQ_goRZslgq';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+    <section id="trabajos" class="py-20 bg-gray-100">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-12">Galería de Trabajos</h2>
+            <div id="galeria" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <p id="mensaje-estado" class="col-span-full text-center text-gray-500 italic">Cargando trabajos recientes...</p>
+            </div>
+        </div>
+    </section>
 
-        async function cargarGaleria() {
-            const nombreBucket = 'jerry-guerra'; // Nombre exacto de tu captura
-            const contenedor = document.getElementById('galeria');
-            const estado = document.getElementById('mensaje-estado');
+    <a href="https://wa.me/584120000000" class="whatsapp-btn shadow-2xl" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
 
-            try {
-                // Obtenemos la lista de archivos
-                const { data, error } = await supabaseClient.storage.from(nombreBucket).list('', {
-                    limit: 100,
-                    offset: 0,
-                    sortBy: { column: 'name', order: 'desc' },
-                });
-
-                if (error) throw error;
-
-                // Filtramos archivos que no sean imágenes reales
-                const imagenes = data.filter(f => !f.name.startsWith('.') && f.name !== '.emptyFolderPlaceholder');
-
-                if (imagenes.length > 0) {
-                    estado.style.display = 'none';
-                    contenedor.innerHTML = ''; 
-
-                    imagenes.forEach(img => {
-                        const { data: urlData } = supabaseClient.storage.from(jerry-guerra).getPublicUrl(img.name);
-                        
-                        // Creamos la tarjeta para cada foto
-                        contenedor.innerHTML += `
-                            <div class="bg-white p-4 shadow-xl rounded-2xl border border-gray-100 transition hover:shadow-2xl">
-                                <img src="${urlData.publicUrl}" class="w-full h-64 object-cover rounded-xl mb-4 shadow-inner" 
-                                     onerror="this.src='https://via.placeholder.com/400x300?text=Error+al+cargar+imagen'">
-                                <h3 class="font-bold text-lg text-slate-700 capitalize">${img.name.split('.')[0]}</h3>
-                                <p class="text-sm text-orange-500 font-medium">Servicio Garantizado</p>
-                            </div>
-                        `;
-                    });
-                } else {
-                    estado.innerText = 'La galería está lista. Sube fotos al bucket "jerry-guerra" para verlas aquí.';
-                }
-            } catch (err) {
-                console.error(err);
-                estado.innerText = 'Error al conectar con las fotos. Revisa la configuración.';
-            }
-        }
-
-        cargarGaleria();
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
