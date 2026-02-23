@@ -31,28 +31,33 @@
         </div>
     </section>
 
-    <section id="servicios" class="py-20 bg-white">
-        <div class="max-w-6xl mx-auto px-4 text-center">
-            <h2 class="text-4xl font-bold mb-12">Nuestros Servicios</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="p-8 bg-blue-50 rounded-2xl border-b-4 border-blue-500 shadow-sm">
-                    <i class="fas fa-snowflake text-4xl text-blue-500 mb-4"></i>
-                    <h3 class="text-2xl font-bold mb-2">Refrigeración</h3>
-                    <p class="text-gray-600">Mantenimiento y reparación de neveras, aires acondicionados y cavas industriales.</p>
-                </div>
-                <div class="p-8 bg-orange-50 rounded-2xl border-b-4 border-orange-500 shadow-sm">
-                    <i class="fas fa-tools text-4xl text-orange-500 mb-4"></i>
-                    <h3 class="text-2xl font-bold mb-2">Construcción</h3>
-                    <p class="text-gray-600">Remodelaciones, albañilería, pintura y acabados de primera calidad.</p>
-                </div>
-                <div class="p-8 bg-green-50 rounded-2xl border-b-4 border-green-500 shadow-sm">
-                    <i class="fas a-paint-roller text-4xl text-green-500 mb-4"></i>
-                    <h3 class="text-2xl font-bold mb-2">Drywall</h3>
-                    <p class="text-gray-600">Instalación de cielo falso, paredes y todo lo relacionado.</p>
-                </div>
+   <section id="servicios" class="py-20 bg-white">
+    <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-4xl font-bold text-center mb-12">Mis Servicios</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            <div onclick="filtrarTrabajos('refrigeracion')" class="cursor-pointer p-8 bg-blue-50 rounded-2xl border-b-4 border-blue-500 shadow-sm hover:scale-105 transition-transform text-center">
+                <i class="fas fa-snowflake text-4xl text-blue-500 mb-4"></i>
+                <h3 class="text-2xl font-bold mb-2">Refrigeración</h3>
+                <p class="text-gray-600">Mantenimiento y reparación de aires acondicionados.</p>
             </div>
+
+            <div onclick="filtrarTrabajos('construccion')" class="cursor-pointer p-8 bg-orange-50 rounded-2xl border-b-4 border-orange-500 shadow-sm hover:scale-105 transition-transform text-center">
+                <i class="fas fa-tools text-4xl text-orange-500 mb-4"></i>
+                <h3 class="text-2xl font-bold mb-2">Construcción</h3>
+                <p class="text-gray-600">Remodelaciones y construcción de paredes de bloque.</p>
+            </div>
+
+            <div onclick="filtrarTrabajos('drywall')" class="cursor-pointer p-8 bg-green-50 rounded-2xl border-b-4 border-green-500 shadow-sm hover:scale-105 transition-transform text-center">
+                <i class="fas fa-paint-roller text-4xl text-green-500 mb-4"></i>
+                <h3 class="text-2xl font-bold mb-2">Drywall</h3>
+                <p class="text-gray-600">Instalación de cielo falso y paredes de yeso.</p>
+            </div>
+
         </div>
-    </section>
+    </div>
+</section>
 
     <section id="trabajos" class="py-20 bg-gray-100">
         <div class="max-w-6xl mx-auto px-4">
