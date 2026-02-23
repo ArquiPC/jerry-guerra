@@ -31,4 +31,18 @@ html {
                 url('imagen/jerry.png');
     background-size: cover;
     background-position: center;
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    
+    /* Esto asegura que el texto se vea bien centrado sobre la imagen */
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
 }
