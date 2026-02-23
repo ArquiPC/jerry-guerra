@@ -28,7 +28,7 @@ html {
 /* Personalización del Hero */
 #inicio {
     background: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.8)), 
-                url('https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&q=80');
+                url('');
     background-size: cover;
     background-position: center;
 }
