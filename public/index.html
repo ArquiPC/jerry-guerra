@@ -28,46 +28,52 @@
     </footer>
 
    <script>
+    // 1. Configuración (Datos verificados de tus capturas)
     const supabaseUrl = 'https://lrjsideqdmiekflpught.supabase.co';
-    const supabaseKey = 'sb_publishable_tjGfyh7Eq8gi6-8xthjGtQ_goRZswC_9A63t7Vshv-g8Y';
+    // Asegúrate de copiar TODA la clave larga que empieza por eyJ...
+    const supabaseKey = 'sb_publishable_tjGfyh7Eq8gi6-8xthjGtQ_goRZslgqsb_publishable_tjGfyh7Eq8gi6-8xthjGtQ_goRZslgq'; 
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
     async function obtenerFotos() {
-        // NOTA: Asegúrate de que 'JERRY GUERRA' sea el nombre exacto del bucket en Supabase
+        // 2. Nombre exacto del bucket que veo en tu captura de "Policies"
         const nombreBucket = 'JERRY GUERRA'; 
-
-        const { data, error } = await supabaseClient.storage.from(nombreBucket).list();
 
         const contenedor = document.getElementById('galeria');
         const mensajeCargando = document.getElementById('cargando');
 
-        if (error) {
-            console.error('Error detallado:', error);
-            mensajeCargando.innerText = 'Error: ' + error.message;
-            return;
-        }
+        try {
+            const { data, error } = await supabaseClient.storage.from(nombreBucket).list();
 
-        if (data && data.length > 0) {
-            mensajeCargando.style.display = 'none';
-            contenedor.innerHTML = ''; // Limpiar antes de cargar
-            
-            data.forEach(foto => {
-                // Saltar archivos del sistema como .emptyFolderPlaceholder
-                if(foto.name.startsWith('.')) return;
+            if (error) {
+                console.error('Error de Supabase:', error);
+                mensajeCargando.innerText = 'Error de conexión: ' + error.message;
+                return;
+            }
 
-                const { data: urlData } = supabaseClient.storage.from(nombreBucket).getPublicUrl(foto.name);
+            if (data && data.length > 0) {
+                mensajeCargando.style.display = 'none';
+                contenedor.innerHTML = ''; 
                 
-                const card = `
-                    <div class="bg-white p-4 shadow-md rounded-lg overflow-hidden border border-gray-200">
-                        <img src="${urlData.publicUrl}" class="w-full h-48 object-cover rounded-md mb-4" 
-                             onerror="this.src='https://via.placeholder.com/400x300?text=Error+al+cargar+imagen'">
-                        <h3 class="font-bold text-lg text-slate-700">${foto.name.split('.')[0]}</h3>
-                    </div>
-                `;
-                contenedor.innerHTML += card;
-            });
-        } else {
-            mensajeCargando.innerText = 'Conectado, pero no se encontraron fotos. ¡Sube una imagen al bucket!';
+                data.forEach(foto => {
+                    // Ignorar archivos ocultos del sistema
+                    if (foto.name.startsWith('.')) return;
+
+                    const { data: urlData } = supabaseClient.storage.from(nombreBucket).getPublicUrl(foto.name);
+                    
+                    const card = `
+                        <div class="bg-white p-4 shadow-md rounded-lg overflow-hidden border border-gray-200">
+                            <img src="${urlData.publicUrl}" class="w-full h-48 object-cover rounded-md mb-4" 
+                                 onerror="this.src='https://via.placeholder.com/400x300?text=Imagen+No+Encontrada'">
+                            <h3 class="font-bold text-lg text-slate-700">${foto.name.split('.')[0]}</h3>
+                        </div>
+                    `;
+                    contenedor.innerHTML += card;
+                });
+            } else {
+                mensajeCargando.innerText = 'Conectado. Ahora sube una foto a la carpeta JERRY GUERRA en Supabase.';
+            }
+        } catch (err) {
+            mensajeCargando.innerText = 'Error inesperado al cargar la galería.';
         }
     }
 
