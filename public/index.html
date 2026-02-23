@@ -27,48 +27,49 @@
         <a href="https://wa.me/TUNUMERO" class="bg-green-600 text-white px-6 py-3 rounded-full font-bold hover:bg-green-700 transition">Contactar por WhatsApp</a>
     </footer>
 
-    <script>
-        // AQUÍ VAN TUS CONSTANTES
-        const supabaseUrl = 'https://lrjsideqdmiekflpught.supabase.co';
-        const supabaseKey = 'sb_publishable_tjGfyh7Eq8gi6-8xthjGtQ_goRZswC_9A63t7Vshv-g8Y';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+   <script>
+    const supabaseUrl = 'https://lrjsideqdmiekflpught.supabase.co';
+    const supabaseKey = 'sb_publishable_tjGfyh7Eq8gi6-8xthjGtQ_goRZswC_9A63t7Vshv-g8Y';
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        async function obtenerFotos() {
-            // Intentamos traer la lista de archivos del bucket 'fotos-obras'
-            const { data, error } = await supabaseClient.storage.from('Jerry Guerra').list();
+    async function obtenerFotos() {
+        // NOTA: Asegúrate de que 'JERRY GUERRA' sea el nombre exacto del bucket en Supabase
+        const nombreBucket = 'JERRY GUERRA'; 
 
-            const contenedor = document.getElementById('galeria');
-            const mensajeCargando = document.getElementById('cargando');
+        const { data, error } = await supabaseClient.storage.from(nombreBucket).list();
 
-            if (error) {
-                console.error('Error al cargar fotos:', error);
-                mensajeCargando.innerText = 'Error al conectar con la galería.';
-                return;
-            }
+        const contenedor = document.getElementById('galeria');
+        const mensajeCargando = document.getElementById('cargando');
 
-            if (data && data.length > 0) {
-                mensajeCargando.style.display = 'none'; // Quitamos el mensaje de carga
-                
-                data.forEach(foto => {
-                    // Generamos la URL pública de cada imagen
-                    const { data: urlData } = supabaseClient.storage.from('Jerry Guerra').getPublicUrl(foto.name);
-                    
-                    // Creamos el diseño para cada foto
-                    const card = `
-                        <div class="bg-white p-4 shadow-md rounded-lg overflow-hidden border border-gray-200">
-                            <img src="${urlData.publicUrl}" class="w-full h-48 object-cover rounded-md mb-4" alt="Trabajo de refrigeración">
-                            <h3 class="font-bold text-lg text-slate-700">${foto.name.split('.')[0]}</h3>
-                        </div>
-                    `;
-                    contenedor.innerHTML += card;
-                });
-            } else {
-                mensajeCargando.innerText = 'Aún no hay fotos en la galería. Sube una a Supabase para verla aquí.';
-            }
+        if (error) {
+            console.error('Error detallado:', error);
+            mensajeCargando.innerText = 'Error: ' + error.message;
+            return;
         }
 
-        // Ejecutamos la función al cargar la página
-        obtenerFotos();
-    </script>
-</body>
-</html>
+        if (data && data.length > 0) {
+            mensajeCargando.style.display = 'none';
+            contenedor.innerHTML = ''; // Limpiar antes de cargar
+            
+            data.forEach(foto => {
+                // Saltar archivos del sistema como .emptyFolderPlaceholder
+                if(foto.name.startsWith('.')) return;
+
+                const { data: urlData } = supabaseClient.storage.from(nombreBucket).getPublicUrl(foto.name);
+                
+                const card = `
+                    <div class="bg-white p-4 shadow-md rounded-lg overflow-hidden border border-gray-200">
+                        <img src="${urlData.publicUrl}" class="w-full h-48 object-cover rounded-md mb-4" 
+                             onerror="this.src='https://via.placeholder.com/400x300?text=Error+al+cargar+imagen'">
+                        <h3 class="font-bold text-lg text-slate-700">${foto.name.split('.')[0]}</h3>
+                    </div>
+                `;
+                contenedor.innerHTML += card;
+            });
+        } else {
+            mensajeCargando.innerText = 'Conectado, pero no se encontraron fotos. ¡Sube una imagen al bucket!';
+        }
+    }
+
+    obtenerFotos();
+</script>
