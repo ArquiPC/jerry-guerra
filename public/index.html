@@ -10,74 +10,78 @@
 <body class="bg-gray-100 text-gray-800">
 
     <header class="bg-slate-800 text-white py-12 text-center">
-        <h1 class="text-4xl font-bold">Jerry Guerra</h1>
+        <h1 class="text-4xl font-bold text-white">Jerry Guerra</h1>
         <p class="text-xl mt-2 text-orange-400">Servicio técnico de refrigeración doméstica</p>
     </header>
 
     <section class="max-w-4xl mx-auto p-8">
-        <h2 class="text-2xl font-semibold border-b-4 border-orange-500 inline-block mb-6">Mis Trabajos Realizados</h2>
+        <h2 class="text-2xl font-semibold border-b-4 border-orange-500 inline-block mb-6 text-slate-800">Mis Trabajos Realizados</h2>
         
         <div id="galeria" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <p id="cargando" class="col-span-full text-center py-10 text-gray-500 italic">Conectando con la galería de trabajos...</p>
+            <p id="mensaje-estado" class="col-span-full text-center py-10 text-gray-500 italic">Cargando galería...</p>
         </div>
     </section>
 
-    <footer class="bg-white py-8 text-center border-t mt-10">
-        <p class="mb-4 font-bold">¿Tu nevera o aire no enfría?</p>
-        <a href="https://wa.me/584121234567?text=Hola%20Jerry,%20vi%20tu%20página%20y%20necesito%20un%20servicio" 
-           class="bg-green-600 text-white px-6 py-3 rounded-full font-bold hover:bg-green-700 transition">
+    <footer class="bg-white py-12 text-center border-t mt-10">
+        <p class="mb-4 font-bold text-lg">¿Tu nevera o aire no enfría?</p>
+        <a href="https://wa.me/584120000000?text=Hola%20Jerry,%20necesito%20un%20servicio%20técnico" 
+           target="_blank"
+           class="bg-green-600 text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-green-700 transition transform hover:scale-105 inline-block">
            Contactar por WhatsApp
         </a>
     </footer>
 
     <script>
-        // CONFIGURACIÓN DE SUPABASE
+        // CONFIGURACIÓN OFICIAL
         const supabaseUrl = 'https://lrjsideqdmiekflpught.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanNpZGVxZG1pZWtmbHB1Z2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjE5NTUsImV4cCI6MjA4NzQzNzk1NX0.fVk9OMKOpV25DMNra-Q5-6iRk3u3ZH6Ye2G-EuBlu28';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        async function obtenerFotos() {
-            // Nombre del bucket corregido a minúsculas
-            const nombreBucket = 'jerry-guerra'; 
+        async function cargarGaleria() {
+            const nombreBucket = 'jerry-guerra'; // Nombre exacto de tu captura
             const contenedor = document.getElementById('galeria');
-            const mensajeCargando = document.getElementById('cargando');
+            const estado = document.getElementById('mensaje-estado');
 
             try {
-                const { data, error } = await supabaseClient.storage.from(nombreBucket).list();
+                // Obtenemos la lista de archivos
+                const { data, error } = await supabaseClient.storage.from(nombreBucket).list('', {
+                    limit: 100,
+                    offset: 0,
+                    sortBy: { column: 'name', order: 'desc' },
+                });
 
-                if (error) {
-                    mensajeCargando.innerText = 'Error de conexión: ' + error.message;
-                    return;
-                }
+                if (error) throw error;
 
-                // Filtrar para ignorar archivos de sistema o vacíos
-                const fotosReales = data.filter(f => !f.name.startsWith('.') && f.name !== '.emptyFolderPlaceholder');
+                // Filtramos archivos que no sean imágenes reales
+                const imagenes = data.filter(f => !f.name.startsWith('.') && f.name !== '.emptyFolderPlaceholder');
 
-                if (fotosReales.length > 0) {
-                    mensajeCargando.style.display = 'none';
+                if (imagenes.length > 0) {
+                    estado.style.display = 'none';
                     contenedor.innerHTML = ''; 
-                    
-                    fotosReales.forEach(foto => {
-                        const { data: urlData } = supabaseClient.storage.from(nombreBucket).getPublicUrl(foto.name);
+
+                    imagenes.forEach(img => {
+                        const { data: urlData } = supabaseClient.storage.from(nombreBucket).getPublicUrl(img.name);
                         
-                        const card = `
-                            <div class="bg-white p-4 shadow-md rounded-lg overflow-hidden border border-gray-200">
-                                <img src="${urlData.publicUrl}" class="w-full h-48 object-cover rounded-md mb-4" 
-                                     onerror="this.src='https://via.placeholder.com/400x300?text=Imagen+No+Encontrada'">
-                                <h3 class="font-bold text-lg text-slate-700">${foto.name.split('.')[0]}</h3>
+                        // Creamos la tarjeta para cada foto
+                        contenedor.innerHTML += `
+                            <div class="bg-white p-4 shadow-xl rounded-2xl border border-gray-100 transition hover:shadow-2xl">
+                                <img src="${urlData.publicUrl}" class="w-full h-64 object-cover rounded-xl mb-4 shadow-inner" 
+                                     onerror="this.src='https://via.placeholder.com/400x300?text=Error+al+cargar+imagen'">
+                                <h3 class="font-bold text-lg text-slate-700 capitalize">${img.name.split('.')[0]}</h3>
+                                <p class="text-sm text-orange-500 font-medium">Servicio Garantizado</p>
                             </div>
                         `;
-                        contenedor.innerHTML += card;
                     });
                 } else {
-                    mensajeCargando.innerText = 'Conectado. Sube fotos al bucket "jerry-guerra" para verlas aquí.';
+                    estado.innerText = 'La galería está lista. Sube fotos al bucket "jerry-guerra" para verlas aquí.';
                 }
             } catch (err) {
-                mensajeCargando.innerText = 'Error inesperado al cargar la galería.';
+                console.error(err);
+                estado.innerText = 'Error al conectar con las fotos. Revisa la configuración.';
             }
         }
 
-        obtenerFotos();
+        cargarGaleria();
     </script>
 </body>
 </html>
