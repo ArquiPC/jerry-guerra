@@ -36,7 +36,7 @@
 
     async function obtenerFotos() {
         // 2. Nombre exacto del bucket que veo en tu captura de "Policies"
-        const nombreBucket = 'JERRY GUERRA'; 
+        const nombreBucket = 'jerry-guerra'; 
 
         const contenedor = document.getElementById('galeria');
         const mensajeCargando = document.getElementById('cargando');
@@ -70,7 +70,7 @@
                     contenedor.innerHTML += card;
                 });
             } else {
-                mensajeCargando.innerText = 'Conectado. Ahora sube una foto a la carpeta JERRY GUERRA en Supabase.';
+                mensajeCargando.innerText = 'Conectado. Ahora sube una foto a la carpeta jerry-guerra en Supabase.';
             }
         } catch (err) {
             mensajeCargando.innerText = 'Error inesperado al cargar la galería.';
