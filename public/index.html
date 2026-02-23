@@ -35,7 +35,7 @@
 
         async function obtenerFotos() {
             // Intentamos traer la lista de archivos del bucket 'fotos-obras'
-            const { data, error } = await supabaseClient.storage.from('jerry-guerra').list();
+            const { data, error } = await supabaseClient.storage.from('Jerry Guerra').list();
 
             const contenedor = document.getElementById('galeria');
             const mensajeCargando = document.getElementById('cargando');
@@ -51,7 +51,7 @@
                 
                 data.forEach(foto => {
                     // Generamos la URL pública de cada imagen
-                    const { data: urlData } = supabaseClient.storage.from('jerry-guerra').getPublicUrl(foto.name);
+                    const { data: urlData } = supabaseClient.storage.from('Jerry Guerra').getPublicUrl(foto.name);
                     
                     // Creamos el diseño para cada foto
                     const card = `
