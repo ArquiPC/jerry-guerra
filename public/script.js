@@ -34,26 +34,24 @@ async function cargarTrabajos() {
 cargarTrabajos();
 
 function enviarWhatsApp() {
-    // 1. Obtenemos los valores de los campos
     const nombre = document.getElementById('nombre-cot').value;
     const servicio = document.getElementById('servicio-cot').value;
     const mensaje = document.getElementById('mensaje-cot').value;
     
-    // Tu número de teléfono (sin el símbolo +)
+    // 1. Usamos la variable correctamente
     const telefono = "584248437083"; 
 
-    // 2. Validamos que el nombre no esté vacío
     if (nombre.trim() === "") {
         alert("Por favor, ingresa tu nombre para que Jerry sepa con quién habla.");
         return;
     }
 
-    // 3. Creamos el mensaje formateado
+    // 2. Formateamos el texto
     const texto = `Hola Jerry! 👋%0A%0AMi nombre es *${nombre}*.%0A%0ANecesito una cotización para: *${servicio}*.%0A%0ADetalles: ${mensaje}`;
 
-    // 4. Construimos la URL de WhatsApp
-    const url = `https://wa.me/${584248437083}?text=${texto}`;
+    // 3. CONSTRUCCIÓN CORRECTA: Usamos la variable 'telefono'
+    const url = `https://wa.me/${telefono}?text=${texto}`;
 
-    // 5. Abrimos en una nueva pestaña
+    // 4. Abrimos WhatsApp
     window.open(url, '_blank');
 }
