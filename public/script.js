@@ -1,49 +1,52 @@
-// 1. CONFIGURACIÓN
+// 1. CONFIGURACIÓN CON NOMBRE ÚNICO
 const supabaseUrl = 'https://lrjsideqdmiekflpught.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanNpZGVxZG1pZWtmbHB1Z2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjE5NTUsImV4cCI6MjA4NzQzNzk1NX0.fVk9OMKOpV25DMNra-Q5-6iRk3u3ZH6Ye2G-EuBlu28';
 
-// Usamos window.supabase para asegurar que usemos la librería externa
-const dbJerry = window.supabase.createClient(supabaseUrl, supabaseKey);
+// Usamos window.supabase para llamar a la librería y lo guardamos en clienteSupabase
+const clienteSupabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+// 2. FUNCIÓN PARA BUSCAR EN CARPETAS
 async function cargarTrabajos() {
+    console.log("Iniciando búsqueda en carpetas...");
     const galeria = document.getElementById('galeria');
     const estado = document.getElementById('mensaje-estado');
-    
-    // Lista de tus carpetas en Supabase
     const carpetas = ['construccion', 'drywall', 'refrigeracion'];
 
+    if (!galeria) return;
+
     try {
-        if (estado) estado.style.display = 'block';
         galeria.innerHTML = ''; 
+        let fotosEncontradas = 0;
 
         for (const carpeta of carpetas) {
-            // Entramos a cada carpeta específica
-            const { data, error } = await dbJerry.storage.from('jerry-guerra').list(carpeta);
+            // Buscamos dentro de cada subcarpeta
+            const { data, error } = await clienteSupabase.storage.from('jerry-guerra').list(carpeta);
 
             if (error) {
-                console.error(`Error en carpeta ${carpeta}:`, error.message);
+                console.error("Error en " + carpeta, error.message);
                 continue;
             }
 
+            // Filtramos archivos reales
             const fotos = data.filter(f => !f.name.startsWith('.'));
+            fotosEncontradas += fotos.length;
 
             fotos.forEach(foto => {
-                // Importante: La ruta ahora incluye el nombre de la carpeta
-                const { data: urlData } = dbJerry.storage.from('jerry-guerra').getPublicUrl(`${carpeta}/${foto.name}`);
+                const { data: urlData } = clienteSupabase.storage.from('jerry-guerra').getPublicUrl(`${carpeta}/${foto.name}`);
                 
                 galeria.innerHTML += `
                     <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
                         <img src="${urlData.publicUrl}" class="w-full h-56 object-cover">
                         <div class="p-4">
-                            <p class="text-sm text-orange-600 font-bold uppercase">${carpeta}</p>
+                            <span class="text-xs font-bold text-orange-500 uppercase">${carpeta}</span>
                             <p class="font-bold text-slate-800">${foto.name.split('.')[0]}</p>
                         </div>
                     </div>`;
             });
         }
 
-        if (galeria.innerHTML === '') {
-            if (estado) estado.innerText = "No se encontraron fotos dentro de las carpetas.";
+        if (fotosEncontradas === 0) {
+            if (estado) estado.innerText = "No se encontraron fotos en las subcarpetas.";
         } else {
             if (estado) estado.style.display = 'none';
         }
@@ -53,7 +56,7 @@ async function cargarTrabajos() {
     }
 }
 
-// Función WhatsApp (Se mantiene igual)
+// 3. WHATSAPP
 function enviarWhatsApp() {
     const nombre = document.getElementById('nombre-cot').value;
     const servicio = document.getElementById('servicio-cot').value;
@@ -63,5 +66,5 @@ function enviarWhatsApp() {
     window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(texto)}`, '_blank');
 }
 
-// Ejecutar al cargar
+// 4. ARRANCAR
 document.addEventListener('DOMContentLoaded', cargarTrabajos);
