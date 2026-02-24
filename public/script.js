@@ -5,7 +5,7 @@ const jerry_db = window.supabase.createClient(URL_SB, KEY_SB);
 
 async function cargarGaleria() {
     const box = document.getElementById('galeria');
-    const carpetas = ['construccion', 'drywall', 'refrigeracion'];
+    const carpetas = ['construccion', 'drywall', 'refrigeracion', 'impermeabilizacion'];
     
     try {
         let html = '';
