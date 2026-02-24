@@ -3,36 +3,74 @@ const KEY_SB = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 
 const jerry_db = window.supabase.createClient(URL_SB, KEY_SB);
 
+// Cambiamos el nombre a cargarGaleria para que coincida con tu llamado original
 async function cargarGaleria() {
     const box = document.getElementById('galeria');
+    // Añadida 'impermeabilizacion' como pediste
     const carpetas = ['construccion', 'drywall', 'refrigeracion', 'impermeabilizacion'];
     
     try {
+        console.log("Iniciando carga de carrusel...");
         let html = '';
+        
         for (const carpeta of carpetas) {
-            // Buscamos dentro de cada carpeta
-            const { data } = await jerry_db.storage.from('jerry-guerra').list(carpeta);
+            const { data, error } = await jerry_db.storage.from('jerry-guerra').list(carpeta);
             
+            if (error) {
+                console.error(`Error en carpeta ${carpeta}:`, error.message);
+                continue;
+            }
+
             if (data) {
                 data.filter(f => !f.name.startsWith('.')).forEach(foto => {
                     const { data: url } = jerry_db.storage.from('jerry-guerra').getPublicUrl(`${carpeta}/${foto.name}`);
+                    
+                    // IMPORTANTE: Cada foto ahora tiene la clase 'swiper-slide'
                     html += `
-                        <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform transition hover:scale-105">
-                            <img src="${url.publicUrl}" class="w-full h-64 object-cover">
-                            <div class="p-3 bg-white">
-                                <p class="text-[10px] font-bold text-orange-600 uppercase tracking-widest">${carpeta}</p>
+                        <div class="swiper-slide">
+                            <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 mx-2 mb-10 transform transition hover:scale-105">
+                                <img src="${url.publicUrl}" class="w-full h-72 object-cover" loading="lazy">
+                                <div class="p-4 bg-white text-center border-t border-gray-50">
+                                    <p class="text-[10px] font-bold text-orange-600 uppercase tracking-widest">${carpeta}</p>
+                                </div>
                             </div>
                         </div>`;
                 });
             }
         }
-        box.innerHTML = html || '<p class="col-span-full text-center py-10">Sube fotos a tus carpetas en Supabase.</p>';
-    } catch (e) { console.error(e); }
+        
+        // Inyectamos los slides en el contenedor
+        box.innerHTML = html || '<div class="swiper-slide text-center py-10">Sube fotos a Supabase para verlas aquí.</div>';
+
+        // INICIALIZACIÓN DE SWIPER (El motor del carrusel)
+        new Swiper(".mySwiper", {
+            slidesPerView: 1,
+            spaceBetween: 10,
+            loop: true,
+            autoplay: {
+                delay: 3000,
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: ".swiper-pagination",
+                clickable: true,
+            },
+            navigation: {
+                nextEl: ".swiper-button-next",
+                prevEl: ".swiper-button-prev",
+            },
+            breakpoints: {
+                640: { slidesPerView: 2, spaceBetween: 20 },
+                1024: { slidesPerView: 3, spaceBetween: 30 },
+            },
+        });
+
+    } catch (e) { 
+        console.error("Error crítico en la galería:", e); 
+    }
 }
 
-document.addEventListener('DOMContentLoaded', cargarGaleria);
-
-// Función WhatsApp
+// Función WhatsApp (Se mantiene igual)
 function enviarWhatsApp() {
     const nombre = document.getElementById('nombre-cot').value;
     const servicio = document.getElementById('servicio-cot').value;
@@ -45,10 +83,5 @@ function enviarWhatsApp() {
     window.open(`https://wa.me/${telefono}?text=${texto}`, '_blank');
 }
 
-// Asegúrate de que este nombre sea el MISMO que pusiste arriba en la función
-document.addEventListener('DOMContentLoaded', () => {
-    // Intentamos llamar a la función que esté definida
-    if (typeof renderGaleria === 'function') renderGaleria();
-    else if (typeof mostrarGaleria === 'function') mostrarGaleria();
-    else if (typeof cargarTrabajos === 'function') cargarTrabajos();
-});
+// Ejecución única al cargar la página
+document.addEventListener('DOMContentLoaded', cargarGaleria);

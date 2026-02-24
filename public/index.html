@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 </head>
 <body>
 
@@ -69,14 +72,22 @@
     </div>
 </section>
 
-    <section id="trabajos" class="py-20 bg-gray-100">
-        <div class="max-w-6xl mx-auto px-4">
-            <h2 class="text-4xl font-bold text-center mb-12">Galería de Trabajos</h2>
-            <div id="galeria" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <p id="mensaje-estado" class="col-span-full text-center text-gray-500 italic">Cargando trabajos recientes...</p>
+  <section id="trabajos" class="py-20 bg-gray-100">
+    <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-4xl font-bold text-center mb-12">Galería de Trabajos</h2>
+        
+        <div class="swiper mySwiper pb-12 overflow-hidden relative">
+            <div id="galeria" class="swiper-wrapper">
+                <p id="mensaje-estado" class="swiper-slide text-center text-gray-500 italic">Cargando trabajos recientes...</p>
             </div>
+            
+            <div class="swiper-button-next !text-orange-600"></div>
+            <div class="swiper-button-prev !text-orange-600"></div>
+            
+            <div class="swiper-pagination"></div>
         </div>
-    </section>
+    </div>
+</section>
 
     <section id="cotizacion" class="py-16 bg-white">
     <div class="max-w-3xl mx-auto px-4">
