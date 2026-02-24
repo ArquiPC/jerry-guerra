@@ -75,7 +75,7 @@ function enviarWhatsApp() {
     const nombre = document.getElementById('nombre-cot').value;
     const servicio = document.getElementById('servicio-cot').value;
     const mensaje = document.getElementById('mensaje-cot').value;
-    const telefono = "584248437083"; 
+    const telefono = "584149015630"; 
 
     if (!nombre) return alert("Por favor, ingresa tu nombre.");
 
