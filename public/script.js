@@ -6,48 +6,50 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const dbJerry = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 async function cargarTrabajos() {
-    console.log("--- INICIANDO TEST DE GALERÍA ---");
     const galeria = document.getElementById('galeria');
+    const estado = document.getElementById('mensaje-estado');
     
-    if (!galeria) {
-        alert("❌ ERROR: No se encontró el elemento 'galeria' en el HTML.");
-        return;
-    }
+    // Lista de tus carpetas en Supabase
+    const carpetas = ['construccion', 'drywall', 'refrigeracion'];
 
     try {
-        // Intento de conexión
-        const { data, error } = await dbJerry.storage.from('jerry-guerra').list();
+        if (estado) estado.style.display = 'block';
+        galeria.innerHTML = ''; 
 
-        if (error) {
-            alert("❌ ERROR DE SUPABASE: " + error.message);
-            return;
+        for (const carpeta of carpetas) {
+            // Entramos a cada carpeta específica
+            const { data, error } = await dbJerry.storage.from('jerry-guerra').list(carpeta);
+
+            if (error) {
+                console.error(`Error en carpeta ${carpeta}:`, error.message);
+                continue;
+            }
+
+            const fotos = data.filter(f => !f.name.startsWith('.'));
+
+            fotos.forEach(foto => {
+                // Importante: La ruta ahora incluye el nombre de la carpeta
+                const { data: urlData } = dbJerry.storage.from('jerry-guerra').getPublicUrl(`${carpeta}/${foto.name}`);
+                
+                galeria.innerHTML += `
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+                        <img src="${urlData.publicUrl}" class="w-full h-56 object-cover">
+                        <div class="p-4">
+                            <p class="text-sm text-orange-600 font-bold uppercase">${carpeta}</p>
+                            <p class="font-bold text-slate-800">${foto.name.split('.')[0]}</p>
+                        </div>
+                    </div>`;
+            });
         }
 
-        console.log("Datos recibidos de Supabase:", data);
-
-        if (!data || data.length === 0) {
-            alert("⚠️ AVISO: La conexión funciona, pero la carpeta 'jerry-guerra' está VACÍA.");
-            return;
+        if (galeria.innerHTML === '') {
+            if (estado) estado.innerText = "No se encontraron fotos dentro de las carpetas.";
+        } else {
+            if (estado) estado.style.display = 'none';
         }
-
-        const fotos = data.filter(f => !f.name.startsWith('.'));
-        galeria.innerHTML = ''; // Limpiar mensaje de carga
-
-        fotos.forEach(foto => {
-            const { data: urlData } = dbJerry.storage.from('jerry-guerra').getPublicUrl(foto.name);
-            console.log("Generando URL para:", foto.name);
-            
-            galeria.innerHTML += `
-                <div class="bg-white rounded-xl shadow-md p-2">
-                    <img src="${urlData.publicUrl}" class="w-full h-56 object-cover rounded-lg" onerror="this.src='https://via.placeholder.com/300?text=Error+al+Cargar+Imagen'">
-                    <p class="text-center font-bold mt-2">${foto.name}</p>
-                </div>`;
-        });
-
-        alert("✅ TEST COMPLETADO: Se intentaron cargar " + fotos.length + " fotos.");
 
     } catch (err) {
-        alert("❌ ERROR CRÍTICO DE JS: " + err.message);
+        console.error("Error crítico:", err.message);
     }
 }
 
