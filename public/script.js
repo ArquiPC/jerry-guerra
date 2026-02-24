@@ -1,73 +1,97 @@
-// 1. USAMOS UN NOMBRE QUE NO EXISTE EN NINGÚN OTRO LADO
-const miConexionSupabase = window.supabase.createClient(
-    'https://lrjsideqdmiekflpught.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanNpZGVxZG1pZWtmbHB1Z2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjE5NTUsImV4cCI6MjA4NzQzNzk1NX0.fVk9OMKOpV25DMNra-Q5-6iRk3u3ZH6Ye2G-EuBlu28'
-);
+// 1. CONFIGURACIÓN INICIAL
+const supabaseUrl = 'https://lrjsideqdmiekflpught.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanNpZGVxZG1pZWtmbHB1Z2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjE5NTUsImV4cCI6MjA4NzQzNzk1NX0.fVk9OMKOpV25DMNra-Q5-6iRk3u3ZH6Ye2G-EuBlu28';
 
+// Usamos un nombre de variable único para evitar el SyntaxError de "already declared"
+const jerrySupabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+// 2. FUNCIÓN PARA CARGAR TRABAJOS DESDE LAS CARPETAS
 async function cargarTrabajos() {
-    console.log("Iniciando búsqueda en carpetas...");
+    console.log("Iniciando búsqueda en el bucket: jerry-guerra...");
     const galeria = document.getElementById('galeria');
+    const estado = document.getElementById('mensaje-estado');
+    
+    // Estas deben coincidir exactamente con tus carpetas en Supabase
     const carpetas = ['construccion', 'drywall', 'refrigeracion'];
 
     if (!galeria) return;
 
     try {
-        let fotosHtml = '';
-        let fotosTotales = 0;
+        let htmlFinal = '';
+        let contadorFotos = 0;
 
+        // Recorremos cada carpeta interna del bucket
         for (const carpeta of carpetas) {
-            const { data, error } = await clienteSupabase.storage.from('jerry-guerra').list(carpeta);
+            const { data, error } = await jerrySupabase
+                .storage
+                .from('jerry-guerra') // Bucket principal
+                .list(carpeta);       // Carpeta específica
 
             if (error) {
-                console.error("Error al listar " + carpeta, error);
+                console.error(`Error al leer carpeta ${carpeta}:`, error.message);
                 continue;
             }
 
-            const fotos = data.filter(f => !f.name.startsWith('.'));
-            
+            // Filtramos archivos ocultos o vacíos
+            const fotos = data.filter(f => !f.name.startsWith('.') && f.name !== '.emptyFolderPlaceholder');
+
             fotos.forEach(foto => {
-                fotosTotales++;
-                // Usamos encodeURIComponent para que los espacios del nombre funcionen bien
-                const nombreSeguro = encodeURIComponent(foto.name);
-                const { data: urlData } = clienteSupabase.storage.from('jerry-guerra').getPublicUrl(`${carpeta}/${foto.name}`);
+                contadorFotos++;
+                // Construimos la ruta completa para la URL pública
+                const rutaArchivo = `${carpeta}/${foto.name}`;
+                const { data: urlData } = jerrySupabase.storage.from('jerry-guerra').getPublicUrl(rutaArchivo);
                 
-                fotosHtml += `
-                    <div class="bg-white rounded-xl shadow-md overflow-hidden hover:scale-105 transition-transform duration-300">
-                        <img src="${urlData.publicUrl}" 
-                             class="w-full h-56 object-cover" 
-                             alt="${foto.name}"
-                             onerror="this.src='https://via.placeholder.com/400x300?text=Error+de+Carga'">
-                        <div class="p-4 bg-white">
-                            <span class="text-xs font-bold text-orange-500 uppercase tracking-wider">${carpeta}</span>
-                            <p class="font-bold text-slate-800 text-sm mt-1">${foto.name.split('.')[0]}</p>
+                // Generamos el HTML de la tarjeta
+                htmlFinal += `
+                    <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300">
+                        <div class="relative group">
+                            <img src="${urlData.publicUrl}" 
+                                 class="w-full h-64 object-cover" 
+                                 alt="${foto.name}"
+                                 onerror="this.src='https://via.placeholder.com/400x300?text=Imagen+No+Encontrada'">
+                            <div class="absolute top-3 left-3">
+                                <span class="bg-orange-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase">
+                                    ${carpeta}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <p class="font-bold text-slate-800 truncate">${foto.name.split('.')[0]}</p>
                         </div>
                     </div>`;
             });
         }
 
-        if (fotosTotales === 0) {
-            galeria.innerHTML = '<p class="col-span-full text-center text-gray-500 py-10">No se encontraron imágenes en las carpetas de Supabase.</p>';
+        // Actualizamos la interfaz
+        if (contadorFotos === 0) {
+            galeria.innerHTML = '<p class="col-span-full text-center text-gray-500 italic py-10">Aún no hay fotos en las carpetas de trabajo.</p>';
         } else {
-            galeria.innerHTML = fotosHtml;
-            console.log("¡Se cargaron " + fotosTotales + " fotos con éxito!");
+            if (estado) estado.style.display = 'none';
+            galeria.innerHTML = htmlFinal;
+            console.log(`¡Éxito! Se cargaron ${contadorFotos} imágenes.`);
         }
 
-    } catch (e) {
-        console.error("Error crítico en la carga:", e);
-        galeria.innerHTML = '<p class="col-span-full text-center text-red-500">Error al conectar con la galería.</p>';
+    } catch (err) {
+        console.error("Error crítico de ejecución:", err);
     }
 }
 
+// 3. FUNCIÓN PARA EL FORMULARIO DE WHATSAPP
 function enviarWhatsApp() {
     const nombre = document.getElementById('nombre-cot').value;
     const servicio = document.getElementById('servicio-cot').value;
     const mensaje = document.getElementById('mensaje-cot').value;
     const telefono = "584248437083"; 
-    
-    if (!nombre) return alert("Escribe tu nombre");
 
-    const texto = `Hola Jerry! Mi nombre es ${nombre}. Necesito: ${servicio}. Detalles: ${mensaje}`;
-    window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(texto)}`, '_blank');
+    if (!nombre || nombre.trim() === "") {
+        alert("Por favor, ingresa tu nombre para continuar.");
+        return;
+    }
+
+    // Codificamos el texto para que los espacios y emojis no rompan el link
+    const texto = encodeURIComponent(`Hola Jerry! 👋 Mi nombre es *${nombre}*. Necesito ayuda con: *${servicio}*. Detalles: ${mensaje}`);
+    window.open(`https://wa.me/${telefono}?text=${texto}`, '_blank');
 }
 
+// 4. INICIALIZACIÓN AL CARGAR LA PÁGINA
 document.addEventListener('DOMContentLoaded', cargarTrabajos);
