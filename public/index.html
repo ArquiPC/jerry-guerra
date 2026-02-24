@@ -200,6 +200,36 @@ function enviarWhatsApp() {
     const url = `https://wa.me/${telefono}?text=${texto}`;
     window.open(url, '_blank');
 }
+
+
+async function cargarTrabajos() {
+    const { data, error } = await supabase.storage.from('jerry-guerra').list();
+    const galeria = document.getElementById('galeria');
+    const estado = document.getElementById('mensaje-estado');
+
+    if (error) {
+        estado.innerText = "Error al cargar la galería.";
+        return;
+    }
+
+    const fotos = data.filter(f => !f.name.startsWith('.'));
+
+    if (fotos.length > 0) {
+        estado.style.display = 'none';
+        galeria.innerHTML = '';
+        fotos.forEach(foto => {
+            const { data: url } = supabase.storage.from('jerry-guerra').getPublicUrl(foto.name);
+            galeria.innerHTML += `
+                <div class="bg-white rounded-xl overflow-hidden shadow-md">
+                    <img src="${url.publicUrl}" class="w-full h-56 object-cover">
+                    <div class="p-4">
+                        <p class="font-bold text-slate-800 capitalize">${foto.name.split('.')[0]}</p>
+                    </div>
+                </div>
+            `;
+        });
+    }
+}
 </script>
 
 <script src="script.js"></script>
