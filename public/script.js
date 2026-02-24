@@ -45,4 +45,10 @@ function enviarWhatsApp() {
     window.open(`https://wa.me/${telefono}?text=${texto}`, '_blank');
 }
 
-document.addEventListener('DOMContentLoaded', cargarTrabajos);
+// Asegúrate de que este nombre sea el MISMO que pusiste arriba en la función
+document.addEventListener('DOMContentLoaded', () => {
+    // Intentamos llamar a la función que esté definida
+    if (typeof renderGaleria === 'function') renderGaleria();
+    else if (typeof mostrarGaleria === 'function') mostrarGaleria();
+    else if (typeof cargarTrabajos === 'function') cargarTrabajos();
+});
