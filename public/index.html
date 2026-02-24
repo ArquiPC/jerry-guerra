@@ -168,6 +168,40 @@
 </div>
     </div>
 </footer>
-</script><script src="script.js"></script>
+</script><script>
+function enviarWhatsApp() {
+    console.log("Intentando enviar mensaje...");
+    
+    // Obtenemos los elementos
+    const nombreInput = document.getElementById('nombre-cot');
+    const servicioInput = document.getElementById('servicio-cot');
+    const mensajeInput = document.getElementById('mensaje-cot');
+
+    // Verificamos que existan
+    if (!nombreInput || !servicioInput || !mensajeInput) {
+        alert("Error técnico: No se encuentran los campos del formulario.");
+        return;
+    }
+
+    const nombre = nombreInput.value.trim();
+    const servicio = servicioInput.value;
+    const mensaje = mensajeInput.value.trim();
+    const telefono = "584248437083"; 
+
+    if (nombre === "") {
+        alert("Por favor, ingresa tu nombre.");
+        return;
+    }
+
+    // Construimos el mensaje (con saltos de línea %0A)
+    const texto = `Hola Jerry! 👋%0A%0AMi nombre es *${nombre}*.%0A%0ANecesito una cotización para: *${servicio}*.%0A%0ADetalles: ${mensaje}`;
+    
+    // Abrimos WhatsApp
+    const url = `https://wa.me/${telefono}?text=${texto}`;
+    window.open(url, '_blank');
+}
+</script>
+
+<script src="script.js"></script>
 </body>
 </html>
