@@ -1,79 +1,36 @@
-// 1. CONFIGURACIÓN
-const supabaseUrl = 'https://lrjsideqdmiekflpught.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanNpZGVxZG1pZWtmbHB1Z2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjE5NTUsImV4cCI6MjA4NzQzNzk1NX0.fVk9OMKOpV25DMNra-Q5-6iRk3u3ZH6Ye2G-EuBlu28';
+const URL_SB = 'https://lrjsideqdmiekflpught.supabase.co';
+const KEY_SB = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanNpZGVxZG1pZWtmbHB1Z2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjE5NTUsImV4cCI6MjA4NzQzNzk1NX0.fVk9OMKOpV25DMNra-Q5-6iRk3u3ZH6Ye2G-EuBlu28';
 
-// Usamos window.supabase para evitar conflictos de declaración
-const jerryApp = window.supabase.createClient(supabaseUrl, supabaseKey);
+const jerry_db = window.supabase.createClient(URL_SB, KEY_SB);
 
-async function cargarTrabajos() {
-    console.log("Iniciando búsqueda profunda en el bucket 'jerry-guerra'...");
-    const galeria = document.getElementById('galeria');
+async function cargarGaleria() {
+    const box = document.getElementById('galeria');
     const carpetas = ['construccion', 'drywall', 'refrigeracion'];
-
-    if (!galeria) return;
-
+    
     try {
-        let contenidoHtml = '';
-        let totalFotos = 0;
-
+        let html = '';
         for (const carpeta of carpetas) {
-            console.log(`Explorando carpeta: ${carpeta}`);
+            // Buscamos dentro de cada carpeta
+            const { data } = await jerry_db.storage.from('jerry-guerra').list(carpeta);
             
-            // Listamos el contenido de la subcarpeta
-            const { data, error } = await jerryApp.storage.from('jerry-guerra').list(carpeta);
-
-            if (error) {
-                console.error(`Error en carpeta ${carpeta}:`, error.message);
-                continue;
+            if (data) {
+                data.filter(f => !f.name.startsWith('.')).forEach(foto => {
+                    const { data: url } = jerry_db.storage.from('jerry-guerra').getPublicUrl(`${carpeta}/${foto.name}`);
+                    html += `
+                        <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform transition hover:scale-105">
+                            <img src="${url.publicUrl}" class="w-full h-64 object-cover">
+                            <div class="p-3 bg-white">
+                                <p class="text-[10px] font-bold text-orange-600 uppercase tracking-widest">${carpeta}</p>
+                            </div>
+                        </div>`;
+                });
             }
-
-            // Filtramos archivos reales (que no empiecen con punto)
-            const fotosValidas = data.filter(archivo => !archivo.name.startsWith('.'));
-
-            fotosValidas.forEach(foto => {
-                totalFotos++;
-                // Construimos la ruta exacta carpeta/nombre-del-archivo
-                const rutaFull = `${carpeta}/${foto.name}`;
-                const { data: urlData } = jerryApp.storage.from('jerry-guerra').getPublicUrl(rutaFull);
-                
-                console.log(`Foto encontrada: ${rutaFull}`);
-
-                contenidoHtml += `
-                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 group">
-                        <div class="h-64 overflow-hidden">
-                            <img src="${urlData.publicUrl}" 
-                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                                 alt="Trabajo de Jerry"
-                                 onerror="this.src='https://via.placeholder.com/400x300?text=Error+al+Cargar'">
-                        </div>
-                        <div class="p-4">
-                            <span class="inline-block px-2 py-1 text-[10px] font-bold bg-orange-100 text-orange-600 rounded uppercase mb-2">
-                                ${carpeta}
-                            </span>
-                            <p class="text-slate-700 font-medium text-sm truncate">
-                                ${foto.name.split('.')[0]}
-                            </p>
-                        </div>
-                    </div>`;
-            });
         }
-
-        // Si después de revisar todas las carpetas el total es 0
-        if (totalFotos === 0) {
-            galeria.innerHTML = `
-                <div class="col-span-full text-center py-10">
-                    <p class="text-gray-400 italic">No se encontraron archivos en las carpetas.</p>
-                    <p class="text-xs text-gray-400 mt-2">Ruta revisada: jerry-guerra/[subcarpetas]</p>
-                </div>`;
-        } else {
-            galeria.innerHTML = contenidoHtml;
-            console.log(`¡Éxito! Se inyectaron ${totalFotos} imágenes.`);
-        }
-
-    } catch (err) {
-        console.error("Error general:", err);
-    }
+        box.innerHTML = html || '<p class="col-span-full text-center py-10">Sube fotos a tus carpetas en Supabase.</p>';
+    } catch (e) { console.error(e); }
 }
+
+document.addEventListener('DOMContentLoaded', cargarGaleria);
 
 // Función WhatsApp
 function enviarWhatsApp() {
