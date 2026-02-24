@@ -52,7 +52,7 @@ function enviarWhatsApp() {
     const texto = `Hola Jerry! 👋%0A%0AMi nombre es *${nombre}*.%0A%0ANecesito una cotización para: *${servicio}*.%0A%0ADetalles: ${mensaje}`;
 
     // 4. Construimos la URL de WhatsApp
-    const url = `https://wa.me/${telefono}?text=${texto}`;
+    const url = `https://wa.me/${584248437083}?text=${texto}`;
 
     // 5. Abrimos en una nueva pestaña
     window.open(url, '_blank');
