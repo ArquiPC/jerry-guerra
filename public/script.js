@@ -100,7 +100,7 @@ window.enviarWhatsApp = function() {
     const ciudad = document.getElementById('ciudad-cot').value;
     const servicio = document.getElementById('servicio-cot').value;
     const mensaje = document.getElementById('mensaje-cot').value;
-    const telefono = "584248437083"; 
+    const telefono = "584149015630"; 
 
     if (!nombre || !estado || !ciudad) {
         return alert("Por favor, completa tu nombre y ubicación.");
