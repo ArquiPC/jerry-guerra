@@ -5,40 +5,56 @@ const miConexionSupabase = window.supabase.createClient(
 );
 
 async function cargarTrabajos() {
+    console.log("Iniciando búsqueda en carpetas...");
     const galeria = document.getElementById('galeria');
     const carpetas = ['construccion', 'drywall', 'refrigeracion'];
 
     if (!galeria) return;
-    galeria.innerHTML = '<p class="text-center col-span-full">Buscando imágenes...</p>';
 
     try {
-        let contenidoHtml = '';
+        let fotosHtml = '';
+        let fotosTotales = 0;
 
         for (const carpeta of carpetas) {
-            const { data, error } = await miConexionSupabase.storage.from('jerry-guerra').list(carpeta);
+            const { data, error } = await clienteSupabase.storage.from('jerry-guerra').list(carpeta);
 
-            if (error) continue;
+            if (error) {
+                console.error("Error al listar " + carpeta, error);
+                continue;
+            }
 
             const fotos = data.filter(f => !f.name.startsWith('.'));
-
+            
             fotos.forEach(foto => {
-                const { data: urlData } = miConexionSupabase.storage.from('jerry-guerra').getPublicUrl(`${carpeta}/${foto.name}`);
+                fotosTotales++;
+                // Usamos encodeURIComponent para que los espacios del nombre funcionen bien
+                const nombreSeguro = encodeURIComponent(foto.name);
+                const { data: urlData } = clienteSupabase.storage.from('jerry-guerra').getPublicUrl(`${carpeta}/${foto.name}`);
                 
-                contenidoHtml += `
-                    <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                        <img src="${urlData.publicUrl}" class="w-full h-56 object-cover" onerror="this.parentElement.style.display='none'">
-                        <div class="p-4 text-center">
-                            <span class="text-xs font-bold text-orange-500 uppercase">${carpeta}</span>
-                            <p class="font-bold text-slate-800">${foto.name.split('.')[0]}</p>
+                fotosHtml += `
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden hover:scale-105 transition-transform duration-300">
+                        <img src="${urlData.publicUrl}" 
+                             class="w-full h-56 object-cover" 
+                             alt="${foto.name}"
+                             onerror="this.src='https://via.placeholder.com/400x300?text=Error+de+Carga'">
+                        <div class="p-4 bg-white">
+                            <span class="text-xs font-bold text-orange-500 uppercase tracking-wider">${carpeta}</span>
+                            <p class="font-bold text-slate-800 text-sm mt-1">${foto.name.split('.')[0]}</p>
                         </div>
                     </div>`;
             });
         }
 
-        galeria.innerHTML = contenidoHtml || '<p class="text-center col-span-full">No se encontraron imágenes en las carpetas.</p>';
+        if (fotosTotales === 0) {
+            galeria.innerHTML = '<p class="col-span-full text-center text-gray-500 py-10">No se encontraron imágenes en las carpetas de Supabase.</p>';
+        } else {
+            galeria.innerHTML = fotosHtml;
+            console.log("¡Se cargaron " + fotosTotales + " fotos con éxito!");
+        }
 
     } catch (e) {
-        galeria.innerHTML = '<p class="text-center col-span-full text-red-500">Error al cargar.</p>';
+        console.error("Error crítico en la carga:", e);
+        galeria.innerHTML = '<p class="col-span-full text-center text-red-500">Error al conectar con la galería.</p>';
     }
 }
 
