@@ -108,33 +108,37 @@ async function cargarDatos() {
 
 // --- C. FUNCIÓN PARA BORRAR ---
 async function borrarFoto(ruta) {
-    const passConfirm = prompt("Por seguridad, introduce tu contraseña para confirmar la eliminación:");
+    // 1. PRIMERO: Preguntar si está seguro
+    const confirmar = confirm("¿Jerry, estás seguro de borrar esta foto? Esta acción no se puede deshacer.");
     
-    if (!passConfirm) return;
+    if (!confirmar) return; // Si cancela, no hacemos nada
 
-    // Obtenemos el correo del usuario actual
+    // 2. SEGUNDO: Solicitar la contraseña
+    const passConfirm = prompt("Para confirmar la eliminación definitiva, introduce tu contraseña:");
+    
+    if (!passConfirm) return; // Si cancela o deja vacío
+
+    // 3. TERCERO: Validar contraseña con Supabase
     const { data: { user } } = await jerry_db.auth.getUser();
 
-    // Intentamos un "re-login" silencioso para verificar la clave
     const { error: authError } = await jerry_db.auth.signInWithPassword({
         email: user.email,
         password: passConfirm,
     });
 
     if (authError) {
-        alert("Contraseña incorrecta. No se puede eliminar la imagen.");
+        alert("Contraseña incorrecta. La foto NO ha sido eliminada.");
         return;
     }
 
-    // Si la clave es correcta, procedemos
-    if (confirm("¿Estás seguro de borrar esta foto definitivamente?")) {
-        const { error } = await jerry_db.storage.from('jerry-guerra').remove([ruta]);
-        if (error) {
-            alert("Error al borrar: " + error.message);
-        } else {
-            alert("Foto eliminada correctamente.");
-            cargarDatos();
-        }
+    // 4. CUARTO: Borrar de una vez (ya que la clave fue correcta)
+    const { error } = await jerry_db.storage.from('jerry-guerra').remove([ruta]);
+    
+    if (error) {
+        alert("Error técnico al borrar: " + error.message);
+    } else {
+        alert("Foto eliminada con éxito.");
+        cargarDatos(); // Refrescar el visor de fotos
     }
 }
 // Asegúrate de que borrarFoto sea global
