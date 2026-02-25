@@ -8,23 +8,38 @@ const jerry_db = supabase.createClient(URL_SB, KEY_SB);
 let rutaParaBorrar = ""; 
 let timerInactividad;
 
+// --- FUNCIÓN PARA EL OJITO (VISIBILIDAD) ---
+function togglePassword(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.add("text-orange-500");
+    } else {
+        input.type = "password";
+        icon.classList.remove("text-orange-500");
+    }
+}
+
 // ==========================================
 // 2. ACCESO Y PANEL
 // ==========================================
 
 async function verificarAcceso() {
-    
-    const emailInput = "EL_OTRO_CORREO@gmail.com"; // O mejor, añade un campo de email en tu login-screen
-    const pass = document.getElementById('admin-pass').value;
+    // CORRECCIÓN AQUÍ: Leemos el valor del input de email del HTML
+    const emailInput = document.getElementById('admin-email').value.trim();
+    const pass = document.getElementById('admin-pass').value.trim();
 
-    // Intentamos iniciar sesión con cualquier usuario registrado en tu Auth de Supabase
+    if (!emailInput || !pass) return alert("Por favor, ingresa correo y clave.");
+
+    // Intentamos iniciar sesión con los datos que escribiste
     const { data, error } = await jerry_db.auth.signInWithPassword({ 
         email: emailInput, 
         password: pass 
     });
 
     if (error) {
-        alert("Acceso denegado: Usuario o clave incorrectos.");
+        alert("Acceso denegado: " + error.message);
     } else {
         mostrarPanel();
     }
@@ -50,7 +65,6 @@ async function cerrarSesion() {
 // ==========================================
 
 async function cargarDatos() {
-    // A. SOLICITUDES
     const tabla = document.getElementById('tabla-clientes');
     const { data: solicitudes } = await jerry_db.from('solicitudes_presupuesto').select('*').order('created_at', { ascending: false });
 
@@ -68,7 +82,6 @@ async function cargarDatos() {
         tabla.innerHTML = htmlS;
     } else { tabla.innerHTML = "<p class='p-4 text-gray-400'>No hay solicitudes.</p>"; }
 
-    // B. VISOR DE FOTOS
     const visor = document.getElementById('visor-borrar');
     const categorias = ['refrigeracion', 'drywall', 'construccion', 'impermeabilizacion'];
     let htmlF = '';
@@ -78,7 +91,6 @@ async function cargarDatos() {
         if (fotos) {
             fotos.filter(f => f.name !== '.emptyFolderPlaceholder').forEach(f => {
                 const { data: url } = jerry_db.storage.from('jerry-guerra').getPublicUrl(`${cat}/${f.name}`);
-                // Cambiamos onclick para usar escape() y evitar que los caracteres raros rompan el HTML
                 htmlF += `
                     <div class="relative group border rounded-lg overflow-hidden bg-gray-50">
                         <img src="${url.publicUrl}" class="w-full h-24 object-cover">
@@ -101,8 +113,6 @@ async function subirFoto() {
 
     const archivo = fileInput.files[0];
     const extension = archivo.name.split('.').pop();
-    
-    // NOMBRE PREDETERMINADO: foto-categoria-fecha.extension
     const nuevoNombre = `foto-${categoria}-${Date.now()}.${extension}`;
     const rutaDestino = `${categoria}/${nuevoNombre}`;
 
@@ -114,7 +124,7 @@ async function subirFoto() {
     if (error) {
         alert("Error al subir: " + error.message);
     } else {
-        alert("¡Listo! Foto guardada como: " + nuevoNombre);
+        alert("¡Listo Jerry! Foto guardada.");
         fileInput.value = "";
         cargarDatos();
     }
@@ -142,6 +152,7 @@ document.getElementById('btn-confirmar-final').onclick = async () => {
     const clave = document.getElementById('pass-confirmar-borrado').value;
     const { data: { user } } = await jerry_db.auth.getUser();
 
+    // Validamos con el usuario que está actualmente logueado
     const { error: authError } = await jerry_db.auth.signInWithPassword({
         email: user.email,
         password: clave
@@ -151,24 +162,12 @@ document.getElementById('btn-confirmar-final').onclick = async () => {
 
     cerrarModalPass();
 
-    // Intentamos borrar la ruta tal cual
-    const { data, error } = await jerry_db.storage
-        .from('jerry-guerra')
-        .remove([rutaParaBorrar]);
+    const { data, error } = await jerry_db.storage.from('jerry-guerra').remove([rutaParaBorrar]);
 
     if (error || (data && data.length === 0)) {
-        // Segundo intento: Limpiando posibles codificaciones del navegador
-        const rutaDecodificada = decodeURIComponent(rutaParaBorrar);
-        const { data: data2 } = await jerry_db.storage.from('jerry-guerra').remove([rutaDecodificada]);
-        
-        if (data2 && data2.length > 0) {
-            alert("Eliminado correctamente.");
-            cargarDatos();
-        } else {
-            alert("No se pudo borrar por el nombre complejo. Borra esta foto manualmente en el panel de Supabase.");
-        }
+        alert("No se pudo borrar. Intenta de nuevo.");
     } else {
-        alert("¡Eliminado correctamente Jerry!");
+        alert("¡Eliminado correctamente!");
         cargarDatos();
     }
 };
@@ -193,4 +192,5 @@ window.cerrarSesion = cerrarSesion;
 window.subirFoto = subirFoto;
 window.borrarFoto = borrarFoto;
 window.cerrarModalPass = cerrarModalPass;
+window.togglePassword = togglePassword; // Exportamos la función del ojito
 window.onload = mostrarPanel;
