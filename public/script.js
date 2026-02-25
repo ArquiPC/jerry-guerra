@@ -12,7 +12,7 @@ const estadosVZLA = [
     "Portuguesa", "Sucre", "Táchira", "Trujillo", "Vargas", "Yaracuy", "Zulia"
 ];
 
-// 1. CARGAR GALERÍA (Sin cambios)
+// 1. CARGAR GALERÍA (Se mantiene igual)
 async function cargarGaleria(filtro = 'todos') {
     const box = document.getElementById('galeria');
     const carpetas = (filtro === 'todos') 
@@ -64,17 +64,15 @@ async function cargarGaleria(filtro = 'todos') {
     } catch (e) { console.error("Error en la galería:", e); }
 }
 
-// 2. FUNCIÓN PARA MOSTRAR CAMPOS DINÁMICOS (NUEVA)
+// 2. MOSTRAR CAMPOS DINÁMICOS
 window.actualizarFormulario = function() {
     const servicio = document.getElementById('servicio-cot').value;
     const divRefri = document.getElementById('extra-refrigeracion');
     const divMetraje = document.getElementById('extra-metraje');
 
-    // Ocultar todo primero
     if(divRefri) divRefri.classList.add('hidden');
     if(divMetraje) divMetraje.classList.add('hidden');
 
-    // Mostrar según el servicio
     if (servicio === "Refrigeración") {
         divRefri.classList.remove('hidden');
     } else if (["Construcción", "Drywall", "Impermeabilización"].includes(servicio)) {
@@ -82,44 +80,96 @@ window.actualizarFormulario = function() {
     }
 };
 
-// 3. FUNCIÓN WHATSAPP (ACTUALIZADA)
-window.enviarWhatsApp = function() {
-    const nombre = document.getElementById('nombre-cot').value;
+// 3. FUNCIÓN WHATSAPP CON VALIDACIÓN Y RESPALDO DB
+window.enviarWhatsApp = async function() {
+    // Referencias a inputs para focus
+    const inputNombre = document.getElementById('nombre-cot');
+    const inputTel = document.getElementById('tel-cot'); // ¡Asegúrate que exista en tu HTML!
+    
+    // Captura de valores
+    const nombre = inputNombre.value.trim();
+    const telefono_cliente = inputTel ? inputTel.value.trim() : "";
     const estado = document.getElementById('estado-cot').value;
-    const ciudad = document.getElementById('ciudad-cot').value;
+    const ciudad = document.getElementById('ciudad-cot').value.trim();
     const servicio = document.getElementById('servicio-cot').value;
-    const mensaje = document.getElementById('mensaje-cot').value;
-    const telefono = "584149015630"; 
+    const mensaje = document.getElementById('mensaje-cot').value.trim();
+    const telefono_jerry = "584149015630"; 
 
-    if (!nombre || !estado || !ciudad || !servicio) {
-        return alert("Por favor, completa los campos básicos (Nombre, Ubicación y Servicio).");
+    // --- VALIDACIONES ---
+    if (!nombre || !telefono_cliente || !estado || !ciudad || !servicio) {
+        alert("⚠️ Por favor, completa todos los campos obligatorios.");
+        return;
     }
 
-    // --- Lógica de campos dinámicos ---
+    // Validar nombre (Solo letras)
+    if (!/^[a-zA-ZÀ-ÿ\s]{3,40}$/.test(nombre)) {
+        alert("⚠️ Por favor, ingresa un nombre válido.");
+        inputNombre.focus();
+        return;
+    }
+
+    // Validar teléfono (Solo números 10-15)
+    if (!/^[0-9]{10,15}$/.test(telefono_cliente)) {
+        alert("⚠️ Ingresa un número de teléfono válido (solo números).");
+        inputTel.focus();
+        return;
+    }
+
+    // --- LÓGICA DE DATOS TÉCNICOS ---
     let extraData = "";
+    let camposTecnicos = {};
+
     if (servicio === "Refrigeración") {
         const equipo = document.getElementById('equipo-tipo').value;
-        const capacidad = document.getElementById('capacidad-ref').value;
+        const capacidad = document.getElementById('capacidad-ref').value.trim();
+        if(!capacidad) { alert("Indica la capacidad del equipo."); return; }
         extraData = `\n❄️ *Equipo:* ${equipo}\n📊 *Capacidad:* ${capacidad}`;
+        camposTecnicos = { equipo, capacidad };
     } else if (["Construcción", "Drywall", "Impermeabilización"].includes(servicio)) {
         const metros = document.getElementById('metros-cuadrados').value;
+        if(!metros || metros <= 0) { alert("Ingresa los metros cuadrados."); return; }
         extraData = `\n📐 *Metraje:* ${metros} m²`;
+        camposTecnicos = { metraje: metros };
     }
 
-    const texto = encodeURIComponent(
-        `¡Hola Jerry! 👋\n\n` +
-        `*SOLICITUD DE COTIZACIÓN*\n` +
-        `--------------------------\n` +
-        `👤 Cliente: *${nombre}*\n` +
-        `📍 Ubicación: *${ciudad}, Edo. ${estado}*\n` +
-        `🛠️ Servicio: *${servicio}*${extraData}\n` +
-        `📝 Detalles: ${mensaje}`
-    );
-    
-    window.open(`https://wa.me/${telefono}?text=${texto}`, '_blank');
+    try {
+        // --- PASO 1: RESPALDO EN SUPABASE ---
+        const { error } = await jerry_db
+            .from('solicitudes_presupuesto')
+            .insert([{ 
+                nombre, 
+                telefono: telefono_cliente, 
+                ubicacion: `${ciudad}, ${estado}`, 
+                servicio, 
+                detalles_tecnicos: camposTecnicos, 
+                mensaje_adicional: mensaje 
+            }]);
+
+        if (error) throw error;
+
+        // --- PASO 2: ABRIR WHATSAPP ---
+        const texto = encodeURIComponent(
+            `¡Hola Jerry Guerra! 👋\n\n` +
+            `*SOLICITUD DE COTIZACIÓN*\n` +
+            `--------------------------\n` +
+            `👤 Cliente: *${nombre}*\n` +
+            `📞 Teléfono: *${telefono_cliente}*\n` +
+            `📍 Ubicación: *${ciudad}, Edo. ${estado}*\n` +
+            `🛠️ Servicio: *${servicio}*${extraData}\n\n` +
+            `📝 Detalles: ${mensaje || 'Sin detalles adicionales.'}`
+        );
+        
+        window.open(`https://wa.me/${telefono_jerry}?text=${texto}`, '_blank');
+
+    } catch (err) {
+        console.error("Error de respaldo:", err);
+        alert("Respaldo fallido, pero abriendo WhatsApp...");
+        // Intentamos abrir WhatsApp de todos modos para no perder la venta
+        window.open(`https://wa.me/${telefono_jerry}?text=Error en formulario, contactar a ${nombre}`, '_blank');
+    }
 };
 
-// 4. INICIALIZACIONES
+// 4. INICIALIZACIONES (Igual que antes)
 window.filtrarTrabajos = function(categoria) {
     const seccionTrabajos = document.getElementById('trabajos');
     if (seccionTrabajos) seccionTrabajos.scrollIntoView({ behavior: 'smooth' });
