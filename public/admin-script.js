@@ -136,10 +136,7 @@ document.getElementById('btn-confirmar-final').onclick = async () => {
     const clave = document.getElementById('pass-confirmar-borrado').value;
     if (!clave) return alert("Escribe la clave.");
 
-    // 1. Obtener usuario actual
     const { data: { user } } = await jerry_db.auth.getUser();
-    
-    // 2. Validar clave re-autenticando
     const { error: authError } = await jerry_db.auth.signInWithPassword({
         email: user.email,
         password: clave
@@ -149,21 +146,18 @@ document.getElementById('btn-confirmar-final').onclick = async () => {
 
     cerrarModalPass();
 
-    // --- EL CAMBIO ESTÁ AQUÍ ---
-    // Limpiamos la ruta de cualquier espacio accidental y la metemos en el array de borrado
-    const rutaLimpia = rutaParaBorrar.trim();
-    
-    console.log("Intentando borrar exactamente:", rutaLimpia);
+    // IMPORTANTE: Usamos decodeURIComponent para asegurar que los espacios 
+    // y paréntesis se envíen tal cual existen en Supabase.
+    const rutaReal = decodeURIComponent(rutaParaBorrar);
 
     const { data, error } = await jerry_db.storage
         .from('jerry-guerra')
-        .remove([rutaLimpia]);
+        .remove([rutaReal]);
 
     if (error) {
         alert("Error de Supabase: " + error.message);
     } else if (data && data.length === 0) {
-        // Si el servidor responde con una lista vacía, es que la ruta no existe
-        alert("ERROR DE RUTA: Supabase no encontró el archivo [" + rutaLimpia + "]. Revisa si el nombre tiene espacios o tildes en el panel de Supabase.");
+        alert("No se pudo borrar. Intenta renombrar el archivo en el panel de Supabase y quitarle los espacios.");
     } else {
         alert("¡Eliminado correctamente!");
         cargarDatos();
