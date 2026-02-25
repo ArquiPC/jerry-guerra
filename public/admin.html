@@ -53,63 +53,6 @@
         </section>
     </div>
 
-    <script>
-        // Configuración de Supabase (La misma que ya tienes)
-        const URL_SB = 'https://lrjsideqdmiekflpught.supabase.co';
-        const KEY_SB = 'TU_KEY_AQUI'; 
-        const jerry_db = supabase.createClient(URL_SB, KEY_SB);
-
-        // --- LÓGICA DE LOGIN ---
-        function verificarAcceso() {
-            const pass = document.getElementById('admin-pass').value;
-            if (pass === "Jerry2026*") { // <--- DEFINE LA CLAVE AQUÍ
-                sessionStorage.setItem('sesion_jerry', 'activa');
-                mostrarPanel();
-            } else {
-                alert("Clave incorrecta");
-            }
-        }
-
-        function mostrarPanel() {
-            if (sessionStorage.getItem('sesion_jerry') === 'activa') {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('admin-panel').classList.remove('hidden');
-                cargarDatos(); // Carga clientes y fotos
-            }
-        }
-
-        function cerrarSesion() {
-            sessionStorage.removeItem('sesion_jerry');
-            location.reload();
-        }
-
-        // --- LÓGICA DE SUBIDA (Storage) ---
-        async function subirFoto() {
-            const fileInput = document.getElementById('archivo-foto');
-            const cat = document.getElementById('subir-categoria').value;
-            const file = fileInput.files[0];
-            
-            if (!file) return alert("Selecciona una foto");
-
-            const btn = document.getElementById('btn-subir');
-            btn.innerText = "Subiendo...";
-            btn.disabled = true;
-
-            const nombreLimpio = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
-            const ruta = `${cat}/${nombreLimpio}`;
-
-            const { error } = await jerry_db.storage.from('jerry-guerra').upload(ruta, file);
-
-            if (error) {
-                alert("Error al subir: " + error.message);
-            } else {
-                alert("¡Foto subida con éxito!");
-                location.reload();
-            }
-        }
-
-        // Verificar sesión al cargar la página
-        window.onload = mostrarPanel;
-    </script>
+    <script src="admin-script.js"></script>
 </body>
 </html>
