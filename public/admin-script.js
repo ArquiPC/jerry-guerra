@@ -108,16 +108,34 @@ async function cargarDatos() {
 
 // --- C. FUNCIÓN PARA BORRAR ---
 async function borrarFoto(ruta) {
-    if (confirm("¿Jerry, estás seguro de borrar esta foto? No se puede recuperar.")) {
+    const passConfirm = prompt("Por seguridad, introduce tu contraseña para confirmar la eliminación:");
+    
+    if (!passConfirm) return;
+
+    // Obtenemos el correo del usuario actual
+    const { data: { user } } = await jerry_db.auth.getUser();
+
+    // Intentamos un "re-login" silencioso para verificar la clave
+    const { error: authError } = await jerry_db.auth.signInWithPassword({
+        email: user.email,
+        password: passConfirm,
+    });
+
+    if (authError) {
+        alert("Contraseña incorrecta. No se puede eliminar la imagen.");
+        return;
+    }
+
+    // Si la clave es correcta, procedemos
+    if (confirm("¿Estás seguro de borrar esta foto definitivamente?")) {
         const { error } = await jerry_db.storage.from('jerry-guerra').remove([ruta]);
         if (error) {
             alert("Error al borrar: " + error.message);
         } else {
-            alert("Foto eliminada.");
-            cargarDatos(); // Recargar el visor
+            alert("Foto eliminada correctamente.");
+            cargarDatos();
         }
     }
 }
-
 // Asegúrate de que borrarFoto sea global
 window.borrarFoto = borrarFoto;
