@@ -21,27 +21,77 @@
             <img src="imagen/logo.png" alt="Logo Jerry Guerra" class="h-20 w-auto object-contain">
             
             <h1 class="text-xl font-bold text-orange-500 leading-none">
-                JERRY J GUERRA M
+                JERRY GUERRA M
             </h1>
         </div>
 
         <div class="space-x-4 hidden md:flex">
             <a href="#inicio" class="hover:text-orange-400 transition-colors">Inicio</a>
+            <a href="#por-que-elegirnos" class="hover:text-orange-400 transition-colors">Por que Elejirnos</a>
             <a href="#servicios" class="hover:text-orange-400 transition-colors">Servicios</a>
             <a href="#trabajos" class="hover:text-orange-400 transition-colors">Trabajos</a>
             <a href="#cotizacion" class="hover:text-orange-400 transition-colors">Cotización</a>
         </div>
         
     </div>
-</nav>
-
-    <section id="inicio" class="h-screen flex items-center justify-center text-center bg-slate-800 text-white px-4">
+</nav><div class="h-24"></div>
+<section id="inicio" class="h-screen flex items-center justify-center text-center bg-slate-800 text-white px-4">
         <div>
             <h1 class="text-5xl md:text-7xl font-extrabold mb-4">Soluciones Integrales</h1>
             <p class="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto">Experto en Refrigeración, Construcción y Drywall. Calidad garantizada en cada proyecto.</p>
             <a href="#servicios" class="mt-8 inline-block bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-8 rounded-full transition">Ver mis servicios</a>
         </div>
     </section>
+
+    <section id="por-que-elegirnos" class="py-20 bg-slate-50">
+    <div class="max-w-6xl mx-auto px-4">
+        
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+                ¿Por qué elegir a <span class="text-orange-500">Jerry J Guerra M</span>?
+            </h2>
+            <div class="w-24 h-1 bg-orange-500 mx-auto rounded-full"></div>
+            <p class="mt-4 text-slate-600 max-w-2xl mx-auto">
+                Nos comprometemos con la calidad, la seguridad y la satisfacción total en cada proyecto de construcción y mantenimiento.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            <div class="bg-white p-8 rounded-xl shadow-md border-b-4 border-orange-500 hover:-translate-y-2 transition-transform duration-300">
+                <div class="text-orange-500 mb-4 text-4xl">
+                    <i class="fas fa-hard-hat"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-3">Experiencia Profesional</h3>
+                <p class="text-slate-600">
+                    Contamos con años de trayectoria liderando proyectos de drywall, refrigeración y construcción civil con acabados de primera.
+                </p>
+            </div>
+
+            <div class="bg-white p-8 rounded-xl shadow-md border-b-4 border-slate-900 hover:-translate-y-2 transition-transform duration-300">
+                <div class="text-orange-500 mb-4 text-4xl">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-3">Soluciones Integrales</h3>
+                <p class="text-slate-600">
+                    Desde impermeabilización hasta sistemas eléctricos. Resolvemos todas tus necesidades en un solo lugar, sin complicaciones.
+                </p>
+            </div>
+
+            <div class="bg-white p-8 rounded-xl shadow-md border-b-4 border-orange-500 hover:-translate-y-2 transition-transform duration-300">
+                <div class="text-orange-500 mb-4 text-4xl">
+                    <i class="fas fa-check-double"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-3">Garantía y Calidad</h3>
+                <p class="text-slate-600">
+                    Utilizamos los mejores materiales del mercado y técnicas certificadas para asegurar la durabilidad de cada obra realizada.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
 
    <section id="servicios" class="py-20 bg-white">
     <div class="max-w-6xl mx-auto px-4">
@@ -81,7 +131,8 @@
     </div>
 </section>
 
-<section id="trabajos" class="py-20 bg-gray-100">
+
+    <section id="trabajos" class="py-20 bg-gray-100">
     <div class="max-w-6xl mx-auto px-4 text-center"> <h2 class="text-4xl font-bold mb-4">Galería de Trabajos</h2>
         
         <button onclick="filtrarTrabajos('todos')" 
