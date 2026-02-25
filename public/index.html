@@ -26,11 +26,11 @@
         </div>
 
         <div class="space-x-4 hidden md:flex">
-            <a href="#inicio" class="hover:text-orange-400 transition-colors">Inicio</a>
-            <a href="#por-que-elegirnos" class="hover:text-orange-400 transition-colors">Por que Elejirnos</a>
-            <a href="#servicios" class="hover:text-orange-400 transition-colors">Servicios</a>
-            <a href="#trabajos" class="hover:text-orange-400 transition-colors">Trabajos</a>
-            <a href="#cotizacion" class="hover:text-orange-400 transition-colors">Cotización</a>
+            <a href="#inicio" class="hover:text-orange-400 transition-colors">INICIO</a>
+            <a href="#por-que-elegirnos" class="hover:text-orange-400 transition-colors">CONOCENOS</a>
+            <a href="#servicios" class="hover:text-orange-400 transition-colors">SERVICIOS</a>
+            <a href="#trabajos" class="hover:text-orange-400 transition-colors">TRABAJOS</a>
+            <a href="#cotizacion" class="hover:text-orange-400 transition-colors">COTIZACION</a>
         </div>
         
     </div>
@@ -38,9 +38,19 @@
 <section id="inicio" class="h-screen flex items-center justify-center text-center bg-slate-800 text-white px-4">
         <div>
             <h1 class="text-5xl md:text-7xl font-extrabold mb-4">Soluciones Integrales</h1>
-            <p class="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto">Experto en Refrigeración, Construcción y Drywall. Calidad garantizada en cada proyecto.</p>
+            <p class="text-xl md:text-2xl text-white max-w-2xl mx-auto">Experto en Refrigeración, Construcción, Impermeabilizaciones y Drywall. Calidad garantizada en cada proyecto.</p>
             <a href="#servicios" class="mt-8 inline-block bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-8 rounded-full transition">Ver mis servicios</a>
         </div>
+        <div class="mt-10 flex items-center justify-center gap-6 text-gray-400 text-sm">
+    <div class="flex items-center gap-2">
+        <i class="fas fa-check-circle text-orange-500"></i>
+        <span class="text-white">Presupuesto sin compromiso</span>
+    </div>
+    <div class="flex items-center gap-2">
+        <i class="fas fa-star text-orange-500 "></i>
+        <span class="text-white">Calidad Garantizada</span>
+    </div>
+</div>
     </section>
 
    <section id="por-que-elegirnos" class="min-h-screen py-32 bg-slate-900 text-white flex items-center overflow-hidden">
@@ -136,8 +146,8 @@
 </section>
 
 
-    <section id="trabajos" class="py-20 bg-gray-100">
-    <div class="max-w-6xl mx-auto px-4 text-center"> <h2 class="text-4xl font-bold mb-4">Galería de Trabajos</h2>
+    <section id="trabajos" class="py-20 bg-slate-900">
+    <div class="max-w-6xl mx-auto px-4 text-center"> <h2 class="text-4xl font-bold mb-4 text-white">Galería de Trabajos</h2>
         
         <button onclick="filtrarTrabajos('todos')" 
                 class="mb-12 text-sm text-gray-500 hover:text-orange-600 transition-all inline-flex items-center gap-2 border-b border-transparent hover:border-orange-600 pb-1">
@@ -155,8 +165,8 @@
             <div class="swiper-pagination"></div>
         </div>
     </div>
-</section
-   <section id="cotizacion" class="py-16 bg-white">
+</section>
+  <section id="cotizacion" class="py-16 bg-white">
     <div class="max-w-3xl mx-auto px-4">
         <div class="text-center mb-10">
             <h2 class="text-3xl font-bold text-gray-800">Solicitar Presupuesto</h2>
@@ -177,7 +187,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Estado:</label>
                         <select id="estado-cot" class="w-full p-4 rounded-xl border-none shadow-sm focus:ring-2 focus:ring-orange-500 outline-none">
                             <option value="">Seleccione Estado...</option>
-                        </select>
+                            </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Ciudad / Sector:</label>
@@ -188,8 +198,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Necesito ayuda con:</label>
-                    <select id="servicio-cot" class="w-full p-4 rounded-xl border-none shadow-sm focus:ring-2 focus:ring-orange-500 outline-none">
-                        <option value="General">Seleccionar servicio...</option>
+                    <select id="servicio-cot" onchange="actualizarFormulario()" class="w-full p-4 rounded-xl border-none shadow-sm focus:ring-2 focus:ring-orange-500 outline-none">
+                        <option value="">Seleccionar servicio...</option>
                         <option value="Refrigeración">Refrigeración</option>
                         <option value="Construcción">Construcción</option>
                         <option value="Drywall">Drywall</option>
@@ -197,9 +207,32 @@
                     </select>
                 </div>
 
+                <div id="extra-refrigeracion" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de equipo:</label>
+                        <select id="equipo-tipo" class="w-full p-4 rounded-xl border-none shadow-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="Aire Acondicionado">Aire Acondicionado</option>
+                            <option value="Nevera / Freezer">Nevera / Freezer</option>
+                            <option value="Cava Cuarto">Cava Cuarto</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Capacidad (BTU/HP):</label>
+                        <input type="text" id="capacidad-ref" placeholder="Ej. 12.000 BTU" 
+                               class="w-full p-4 rounded-xl border-none shadow-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                </div>
+
+                <div id="extra-metraje" class="hidden animate-fade-in">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Metraje aproximado (m²):</label>
+                    <input type="number" id="metros-cuadrados" placeholder="Ej. 50" 
+                           class="w-full p-4 rounded-xl border-none shadow-sm focus:ring-2 focus:ring-green-500 outline-none">
+                </div>
+
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Detalles del trabajo:</label>
-                    <textarea id="mensaje-cot" rows="3" placeholder="Ej. Quiero instalar un aire de 12.000 BTU..." 
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Detalles adicionales:</label>
+                    <textarea id="mensaje-cot" rows="3" placeholder="Cuéntanos más sobre el problema o proyecto..." 
                               class="w-full p-4 rounded-xl border-none shadow-sm focus:ring-2 focus:ring-orange-500 outline-none"></textarea>
                 </div>
 
