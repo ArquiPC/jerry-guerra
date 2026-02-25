@@ -95,8 +95,11 @@ async function subirFoto() {
     if (fileInput.files.length === 0) return alert("Selecciona una foto primero.");
 
     const archivo = fileInput.files[0];
-    const nombreArchivo = `${Date.now()}-${archivo.name}`; // Nombre único para evitar errores
-    const rutaDestino = `${categoria}/${nombreArchivo}`;
+    
+    // LIMPIEZA: Quitamos espacios y caracteres raros del nombre antes de subir
+    const nombreLimpio = archivo.name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '');
+    const nombreFinal = `${Date.now()}-${nombreLimpio}`;
+    const rutaDestino = `${categoria}/${nombreFinal}`;
 
     btn.innerText = "Subiendo...";
     btn.disabled = true;
@@ -106,14 +109,13 @@ async function subirFoto() {
     if (error) {
         alert("Error al subir: " + error.message);
     } else {
-        alert("¡Foto subida con éxito Jerry!");
+        alert("¡Foto subida con éxito!");
         fileInput.value = "";
         cargarDatos();
     }
     btn.innerText = "Subir a la Web";
     btn.disabled = false;
 }
-
 // ==========================================
 // 4. BORRADO CON CONTRASEÑA
 // ==========================================
