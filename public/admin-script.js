@@ -92,8 +92,13 @@ async function cargarDatos() {
 
 // --- LÓGICA DE BORRADO ---
 async function borrarFoto(ruta) {
+    // 1. Limpiar espacios por si acaso
+    rutaParaBorrar = ruta.trim(); 
+    
+    // 2. Preguntar si está seguro
     if (!confirm("¿Jerry, estás seguro de borrar esta foto?")) return;
-    rutaParaBorrar = ruta;
+
+    // 3. Mostrar modal
     document.getElementById('pass-confirmar-borrado').value = "";
     document.getElementById('modal-password').classList.remove('hidden');
     document.getElementById('pass-confirmar-borrado').focus();
