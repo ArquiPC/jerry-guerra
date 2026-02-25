@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Administrativo - Jerry Guerra</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -10,21 +11,35 @@
 
     <div id="login-screen" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-50">
         <div class="bg-white p-8 rounded-3xl shadow-2xl w-80 text-center">
-            <h2 class="text-2xl font-bold mb-4">Acceso Jerry</h2>
-            <input type="password" id="admin-pass" placeholder="Introduce tu clave" 
-                   class="w-full p-3 border rounded-xl mb-4 outline-none focus:ring-2 focus:ring-orange-500">
-            <button onclick="verificarAcceso()" class="w-full bg-orange-500 text-white py-3 rounded-xl font-bold">Entrar</button>
+            <h2 class="text-2xl font-bold mb-6 text-slate-800">Acceso Admin</h2>
+            
+            <input type="email" id="admin-email" placeholder="Correo electrónico" 
+                   class="w-full p-3 border rounded-xl mb-3 outline-none focus:ring-2 focus:ring-orange-500">
+            
+            <div class="relative mb-6">
+                <input type="password" id="admin-pass" placeholder="Contraseña" 
+                       class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-orange-500">
+                <button type="button" onclick="togglePassword('admin-pass', 'eye-login')" 
+                        class="absolute right-3 top-3 text-gray-400 hover:text-orange-500">
+                    <svg id="eye-login" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.644C3.423 7.51a10.511 10.511 0 0 1 18.976 0c.339.49.339 1.187 0 1.678-1.385 4.757-9.514 11.237-18.976 0Zm9.964-3.57a3.14 3.14 0 1 0 0 6.28 3.14 3.14 0 0 0 0-6.28Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    </svg>
+                </button>
+            </div>
+
+            <button onclick="verificarAcceso()" class="w-full bg-orange-500 text-white py-3 rounded-xl font-bold hover:bg-orange-600 transition-colors">Entrar</button>
         </div>
     </div>
 
     <div id="admin-panel" class="hidden min-h-screen p-4 md:p-8">
         <header class="flex justify-between items-center mb-10">
             <h1 class="text-3xl font-bold text-slate-800">Panel de Control</h1>
-            <button onclick="cerrarSesion()" class="text-red-500 font-medium">Cerrar Sesión</button>
+            <button onclick="cerrarSesion()" class="text-red-500 font-medium hover:underline">Cerrar Sesión</button>
         </header>
 
         <section class="mb-12">
-            <h3 class="text-xl font-bold mb-4">Ultimas Solicitudes</h3>
+            <h3 class="text-xl font-bold mb-4">Últimas Solicitudes</h3>
             <div class="bg-white rounded-2xl shadow-sm overflow-x-auto" id="tabla-clientes">
                 </div>
         </section>
@@ -33,40 +48,50 @@
             <h3 class="text-xl font-bold mb-4">Gestionar Galería</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm">
-                    <p class="font-bold mb-4">Subir nueva imagen</p>
-                    <select id="subir-categoria" class="w-full p-2 border rounded-lg mb-4">
+                    <p class="font-bold mb-4 text-slate-700">Subir nueva imagen</p>
+                    <select id="subir-categoria" class="w-full p-2 border rounded-lg mb-4 outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="refrigeracion">Refrigeración</option>
                         <option value="drywall">Drywall</option>
                         <option value="construccion">Construcción</option>
                         <option value="impermeabilizacion">Impermeabilización</option>
                     </select>
-                    <input type="file" id="archivo-foto" class="mb-4 text-sm">
-                    <button onclick="subirFoto()" id="btn-subir" class="w-full bg-blue-600 text-white py-2 rounded-lg">Subir a la Web</button>
+                    <input type="file" id="archivo-foto" class="mb-4 text-sm block w-full text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <button onclick="subirFoto()" id="btn-subir" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700">Subir a la Web</button>
                 </div>
 
                 <div class="bg-white p-6 rounded-2xl shadow-sm overflow-y-auto max-h-96">
-                    <p class="font-bold mb-4">Fotos actuales (Toca para borrar)</p>
+                    <p class="font-bold mb-4 text-slate-700">Fotos actuales (Toca para borrar)</p>
                     <div id="visor-borrar" class="grid grid-cols-3 gap-2">
                         </div>
                 </div>
             </div>
         </section>
     </div>
+
     <div id="modal-password" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-[100]">
-    <div class="bg-white p-6 rounded-2xl shadow-2xl w-80 text-center">
-        <h3 class="text-lg font-bold mb-2">Confirmar Acción</h3>
-        <p class="text-sm text-gray-600 mb-4">Introduce tu contraseña para autorizar el borrado.</p>
-        
-        <input type="password" id="pass-confirmar-borrado" 
-               class="w-full p-3 border rounded-xl mb-4 outline-none focus:ring-2 focus:ring-red-500" 
-               placeholder="Contraseña">
-        
-        <div class="flex gap-2">
-            <button onclick="cerrarModalPass()" class="flex-1 py-2 bg-gray-200 rounded-xl font-semibold">Cancelar</button>
-            <button id="btn-confirmar-final" class="flex-1 py-2 bg-red-600 text-white rounded-xl font-semibold">Eliminar</button>
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-80 text-center">
+            <h3 class="text-lg font-bold mb-2">Confirmar Acción</h3>
+            <p class="text-sm text-gray-600 mb-4">Introduce tu clave para autorizar el borrado.</p>
+            
+            <div class="relative mb-4">
+                <input type="password" id="pass-confirmar-borrado" 
+                       class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-red-500" 
+                       placeholder="Contraseña">
+                <button type="button" onclick="togglePassword('pass-confirmar-borrado', 'eye-modal')" 
+                        class="absolute right-3 top-3 text-gray-400 hover:text-red-500">
+                    <svg id="eye-modal" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.644C3.423 7.51a10.511 10.511 0 0 1 18.976 0c.339.49.339 1.187 0 1.678-1.385 4.757-9.514 11.237-18.976 0Zm9.964-3.57a3.14 3.14 0 1 0 0 6.28 3.14 3.14 0 0 0 0-6.28Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="flex gap-2">
+                <button onclick="cerrarModalPass()" class="flex-1 py-2 bg-gray-200 rounded-xl font-semibold">Cancelar</button>
+                <button id="btn-confirmar-final" class="flex-1 py-2 bg-red-600 text-white rounded-xl font-semibold">Eliminar</button>
+            </div>
         </div>
     </div>
-</div>
 
     <script src="admin-script.js"></script>
 </body>
