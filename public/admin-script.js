@@ -5,33 +5,36 @@ const jerry_db = supabase.createClient(URL_SB, KEY_SB);
 
 // --- LOGIN ---
 async function verificarAcceso() {
+    const email = "jayber1990@gmail.com"; // Puedes poner un input para el correo también
     const pass = document.getElementById('admin-pass').value;
-    
-    // Consulta a la tabla de configuración que creamos en Supabase
-    const { data, error } = await jerry_db
-        .from('admin_config')
-        .select('id')
-        .eq('clave_secreta', pass)
-        .maybeSingle();
 
-    if (data) {
-        sessionStorage.setItem('sesion_jerry', 'activa');
-        mostrarPanel();
+    const { data, error } = await jerry_db.auth.signInWithPassword({
+        email: email,
+        password: pass,
+    });
+
+    if (error) {
+        alert("Error de acceso: " + error.message);
     } else {
-        alert("Clave incorrecta o error de conexión.");
+        // Supabase guarda la sesión automáticamente en el navegador
+        mostrarPanel();
     }
 }
 
-function mostrarPanel() {
-    if (sessionStorage.getItem('sesion_jerry') === 'activa') {
+// Para verificar si está logueado al cargar la página
+async function mostrarPanel() {
+    const { data: { user } } = await jerry_db.auth.getUser();
+
+    if (user) {
         document.getElementById('login-screen')?.classList.add('hidden');
         document.getElementById('admin-panel')?.classList.remove('hidden');
-        cargarDatos(); // Carga clientes y fotos
+        cargarDatos();
     }
 }
 
-function cerrarSesion() {
-    sessionStorage.removeItem('sesion_jerry');
+async function cerrarSesion() {
+    const { error } = await jerry_db.auth.signOut(); // Esto cierra la sesión en el servidor
+    if (error) alert("Error al salir: " + error.message);
     location.reload();
 }
 
