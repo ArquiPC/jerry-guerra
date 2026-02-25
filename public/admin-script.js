@@ -40,41 +40,84 @@ async function cerrarSesion() {
 
 // --- GESTIÓN DE DATOS ---
 async function cargarDatos() {
-    // Aquí puedes meter la lógica para llenar la tabla de solicitudes
-    // y el visor de fotos para borrar que vimos antes.
-    console.log("Panel cargado con éxito");
+    console.log("Cargando datos del panel...");
+
+    // --- A. CARGAR SOLICITUDES DE CLIENTES ---
+    const tabla = document.getElementById('tabla-clientes');
+    // Reemplaza 'solicitudes' por el nombre exacto de tu tabla de mensajes
+    const { data: solicitudes, error: errS } = await jerry_db
+        .from('solicitudes_presupuesto') 
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (solicitudes && solicitudes.length > 0) {
+        let htmlS = `
+            <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 border-b">
+                    <tr>
+                        <th class="p-4">Fecha</th>
+                        <th class="p-4">Cliente</th>
+                        <th class="p-4">Servicio</th>
+                        <th class="p-4">Mensaje</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+        solicitudes.forEach(s => {
+            htmlS += `
+                <tr class="border-b hover:bg-slate-50">
+                    <td class="p-4">${new Date(s.created_at).toLocaleDateString()}</td>
+                    <td class="p-4"><b>${s.nombre}</b><br><a href="https://wa.me/${s.telefono}" target="_blank" class="text-green-600 font-bold">${s.telefono}</a></td>
+                    <td class="p-4">${s.servicio}</td>
+                    <td class="p-4 text-gray-500">${s.mensaje_adicional || ''}</td>
+                </tr>`;
+        });
+        htmlS += `</tbody></table>`;
+        tabla.innerHTML = htmlS;
+    } else {
+        tabla.innerHTML = "<p class='p-4 text-gray-400'>No hay solicitudes nuevas.</p>";
+    }
+
+    // --- B. CARGAR VISOR DE FOTOS PARA BORRAR ---
+    const visor = document.getElementById('visor-borrar');
+    visor.innerHTML = "<p class='text-sm text-blue-500'>Cargando fotos...</p>";
+    
+    const categorias = ['refrigeracion', 'drywall', 'construccion', 'impermeabilizacion'];
+    let htmlF = '';
+
+    for (const cat of categorias) {
+        const { data: fotos, error: errF } = await jerry_db.storage.from('jerry-guerra').list(cat);
+        
+        if (fotos) {
+            fotos.filter(f => f.name !== '.emptyFolderPlaceholder').forEach(f => {
+                const { data: url } = jerry_db.storage.from('jerry-guerra').getPublicUrl(`${cat}/${f.name}`);
+                htmlF += `
+                    <div class="relative group border rounded-lg overflow-hidden bg-gray-50">
+                        <img src="${url.publicUrl}" class="w-full h-24 object-cover">
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <button onclick="borrarFoto('${cat}/${f.name}')" class="bg-red-600 text-white text-[10px] px-2 py-1 rounded shadow-lg hover:bg-red-700">
+                                BORRAR
+                            </button>
+                        </div>
+                        <p class="text-[8px] p-1 truncate text-gray-400">${f.name}</p>
+                    </div>`;
+            });
+        }
+    }
+    visor.innerHTML = htmlF || "<p class='text-gray-400'>No hay fotos en la galería.</p>";
 }
 
-async function subirFoto() {
-    const fileInput = document.getElementById('archivo-foto');
-    const cat = document.getElementById('subir-categoria').value;
-    const file = fileInput.files[0];
-    
-    if (!file) return alert("Selecciona una foto");
-
-    const btn = document.getElementById('btn-subir');
-    btn.innerText = "Subiendo...";
-    btn.disabled = true;
-
-    const nombreLimpio = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
-    const ruta = `${cat}/${nombreLimpio}`;
-
-    const { error } = await jerry_db.storage.from('jerry-guerra').upload(ruta, file);
-
-    if (error) {
-        alert("Error: " + error.message);
-        btn.innerText = "Subir a la Web";
-        btn.disabled = false;
-    } else {
-        alert("¡Foto subida con éxito!");
-        location.reload();
+// --- C. FUNCIÓN PARA BORRAR ---
+async function borrarFoto(ruta) {
+    if (confirm("¿Jerry, estás seguro de borrar esta foto? No se puede recuperar.")) {
+        const { error } = await jerry_db.storage.from('jerry-guerra').remove([ruta]);
+        if (error) {
+            alert("Error al borrar: " + error.message);
+        } else {
+            alert("Foto eliminada.");
+            cargarDatos(); // Recargar el visor
+        }
     }
 }
 
-// Hacer funciones globales para que el HTML las vea
-window.verificarAcceso = verificarAcceso;
-window.cerrarSesion = cerrarSesion;
-window.subirFoto = subirFoto;
-
-// Iniciar al cargar
-window.onload = mostrarPanel;
+// Asegúrate de que borrarFoto sea global
+window.borrarFoto = borrarFoto;
