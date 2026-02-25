@@ -96,23 +96,31 @@ async function subirFoto() {
 
     const archivo = fileInput.files[0];
     
-    // LIMPIEZA: Quitamos espacios y caracteres raros del nombre antes de subir
-    const nombreLimpio = archivo.name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '');
-    const nombreFinal = `${Date.now()}-${nombreLimpio}`;
-    const rutaDestino = `${categoria}/${nombreFinal}`;
+    // 1. Extraemos solo la extensión (jpg, png, etc.)
+    const extension = archivo.name.split('.').pop();
+    
+    // 2. CREAMOS UN NOMBRE PREDETERMINADO
+    // Ejemplo: foto-refrigeracion-1740512345678.jpg
+    const nuevoNombre = `foto-${categoria}-${Date.now()}.${extension}`;
+    
+    // 3. Definimos la ruta final (Carpeta/NombreNuevo)
+    const rutaDestino = `${categoria}/${nuevoNombre}`;
 
     btn.innerText = "Subiendo...";
     btn.disabled = true;
 
-    const { error } = await jerry_db.storage.from('jerry-guerra').upload(rutaDestino, archivo);
+    const { error } = await jerry_db.storage
+        .from('jerry-guerra')
+        .upload(rutaDestino, archivo);
 
     if (error) {
         alert("Error al subir: " + error.message);
     } else {
-        alert("¡Foto subida con éxito!");
+        alert("¡Listo! Foto guardada como: " + nuevoNombre);
         fileInput.value = "";
-        cargarDatos();
+        cargarDatos(); // Refresca el visor
     }
+    
     btn.innerText = "Subir a la Web";
     btn.disabled = false;
 }
