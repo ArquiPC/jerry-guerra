@@ -16,15 +16,17 @@
             <input type="email" id="admin-email" placeholder="Correo electrónico" 
                    class="w-full p-3 border rounded-xl mb-3 outline-none focus:ring-2 focus:ring-orange-500">
             
-           <div class="relative mb-6">
+       <div class="relative mb-6">
     <input type="password" id="admin-pass" placeholder="Contraseña" 
            class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-orange-500">
     <button type="button" onclick="togglePassword('admin-pass', 'eye-login')" 
-            class="absolute right-3 top-3 text-gray-400 hover:text-orange-500 flex items-center justify-center">
-        <svg id="eye-login" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.644C3.423 7.51a10.511 10.511 0 0 1 18.976 0c.339.49.339 1.187 0 1.678-1.385 4.757-9.514 11.237-18.976 0Zm9.964-3.57a3.14 3.14 0 1 0 0 6.28 3.14 3.14 0 0 0 0-6.28Z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            class="absolute right-3 top-3 text-gray-400 hover:text-orange-500 transition-colors">
+        
+        <svg id="eye-login" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
         </svg>
+
     </button>
 </div>
 
