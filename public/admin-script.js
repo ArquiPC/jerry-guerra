@@ -106,40 +106,61 @@ async function cargarDatos() {
     visor.innerHTML = htmlF || "<p class='text-gray-400'>No hay fotos en la galería.</p>";
 }
 
-// --- C. FUNCIÓN PARA BORRAR ---
+let rutaParaBorrar = ""; // Variable temporal para guardar qué queremos borrar
+
 async function borrarFoto(ruta) {
-    // 1. PRIMERO: Preguntar si está seguro
-    const confirmar = confirm("¿Jerry, estás seguro de borrar esta foto? Esta acción no se puede deshacer.");
-    
-    if (!confirmar) return; // Si cancela, no hacemos nada
+    // 1. Preguntar si está seguro (Confirmación simple)
+    if (!confirm("¿Jerry, estás seguro de borrar esta foto?")) return;
 
-    // 2. SEGUNDO: Solicitar la contraseña
-    const passConfirm = prompt("Para confirmar la eliminación definitiva, introduce tu contraseña:");
-    
-    if (!passConfirm) return; // Si cancela o deja vacío
+    // 2. Guardar la ruta y mostrar el modal de contraseña
+    rutaParaBorrar = ruta;
+    document.getElementById('pass-confirmar-borrado').value = ""; // Limpiar campo
+    document.getElementById('modal-password').classList.remove('hidden');
+    document.getElementById('pass-confirmar-borrado').focus();
+}
 
-    // 3. TERCERO: Validar contraseña con Supabase
+function cerrarModalPass() {
+    document.getElementById('modal-password').classList.add('hidden');
+    rutaParaBorrar = "";
+}
+
+// Configurar el botón "Eliminar" del Modal
+document.getElementById('btn-confirmar-final').onclick = async () => {
+    const passConfirm = document.getElementById('pass-confirmar-borrado').value;
+    
+    if (!passConfirm) return alert("Debes introducir la contraseña");
+
+    // Validar con Supabase
     const { data: { user } } = await jerry_db.auth.getUser();
-
     const { error: authError } = await jerry_db.auth.signInWithPassword({
         email: user.email,
         password: passConfirm,
     });
 
     if (authError) {
-        alert("Contraseña incorrecta. La foto NO ha sido eliminada.");
+        alert("Contraseña incorrecta. Acción cancelada.");
         return;
     }
 
-    // 4. CUARTO: Borrar de una vez (ya que la clave fue correcta)
-    const { error } = await jerry_db.storage.from('jerry-guerra').remove([ruta]);
+    // Proceder al borrado
+    cerrarModalPass(); // Ocultar modal mientras borra
+    const { error } = await jerry_db.storage.from('jerry-guerra').remove([rutaParaBorrar]);
     
     if (error) {
-        alert("Error técnico al borrar: " + error.message);
+        alert("Error: " + error.message);
     } else {
         alert("Foto eliminada con éxito.");
-        cargarDatos(); // Refrescar el visor de fotos
+        cargarDatos();
     }
-}
+};
+
+// Hacer que funcione al presionar "Enter" en el input
+document.getElementById('pass-confirmar-borrado').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') document.getElementById('btn-confirmar-final').click();
+});
+
+// Asegurar funciones globales
+window.borrarFoto = borrarFoto;
+window.cerrarModalPass = cerrarModalPass;
 // Asegúrate de que borrarFoto sea global
 window.borrarFoto = borrarFoto;
