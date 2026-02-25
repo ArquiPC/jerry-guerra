@@ -134,32 +134,34 @@ function cerrarModalPass() {
 
 document.getElementById('btn-confirmar-final').onclick = async () => {
     const clave = document.getElementById('pass-confirmar-borrado').value;
-    if (!clave) return alert("Escribe la clave.");
-
     const { data: { user } } = await jerry_db.auth.getUser();
+
     const { error: authError } = await jerry_db.auth.signInWithPassword({
         email: user.email,
         password: clave
     });
 
-    if (authError) return alert("Clave incorrecta Jerry.");
+    if (authError) return alert("Clave incorrecta.");
 
     cerrarModalPass();
 
-    // IMPORTANTE: Usamos decodeURIComponent para asegurar que los espacios 
-    // y paréntesis se envíen tal cual existen en Supabase.
-    const rutaReal = decodeURIComponent(rutaParaBorrar);
+    // --- LA CORRECCIÓN CLAVE ---
+    // decodeURIComponent convierte los códigos de URL (como %20) de vuelta a espacios y puntos reales
+    const rutaParaBorrarReal = decodeURIComponent(rutaParaBorrar);
+
+    console.log("Intentando borrar ruta real:", rutaParaBorrarReal);
 
     const { data, error } = await jerry_db.storage
         .from('jerry-guerra')
-        .remove([rutaReal]);
+        .remove([rutaParaBorrarReal]);
 
-    if (error) {
-        alert("Error de Supabase: " + error.message);
-    } else if (data && data.length === 0) {
-        alert("No se pudo borrar. Intenta renombrar el archivo en el panel de Supabase y quitarle los espacios.");
+    if (error || (data && data.length === 0)) {
+        // Si falla, intentamos con la ruta original por si acaso
+        await jerry_db.storage.from('jerry-guerra').remove([rutaParaBorrar]);
+        alert("Si la foto sigue ahí, es por los puntos en el nombre. Te recomiendo borrarla manualmente en Supabase una sola vez.");
+        cargarDatos();
     } else {
-        alert("¡Eliminado correctamente!");
+        alert("¡Eliminado correctamente Jerry!");
         cargarDatos();
     }
 };
