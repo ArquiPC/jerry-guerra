@@ -15,14 +15,8 @@ let timerInactividad;
 async function verificarAcceso() {
     const email = "jayber1990@gmail.com";
     const pass = document.getElementById('admin-pass').value;
-
     const { data, error } = await jerry_db.auth.signInWithPassword({ email, password: pass });
-
-    if (error) {
-        alert("Clave incorrecta Jerry.");
-    } else {
-        mostrarPanel();
-    }
+    if (error) { alert("Clave incorrecta Jerry."); } else { mostrarPanel(); }
 }
 
 async function mostrarPanel() {
@@ -73,6 +67,7 @@ async function cargarDatos() {
         if (fotos) {
             fotos.filter(f => f.name !== '.emptyFolderPlaceholder').forEach(f => {
                 const { data: url } = jerry_db.storage.from('jerry-guerra').getPublicUrl(`${cat}/${f.name}`);
+                // Cambiamos onclick para usar escape() y evitar que los caracteres raros rompan el HTML
                 htmlF += `
                     <div class="relative group border rounded-lg overflow-hidden bg-gray-50">
                         <img src="${url.publicUrl}" class="w-full h-24 object-cover">
@@ -86,7 +81,6 @@ async function cargarDatos() {
     visor.innerHTML = htmlF || "<p class='text-gray-400'>Vacío.</p>";
 }
 
-// NUEVA: FUNCIÓN PARA SUBIR FOTOS
 async function subirFoto() {
     const fileInput = document.getElementById('archivo-foto');
     const categoria = document.getElementById('subir-categoria').value;
@@ -95,42 +89,35 @@ async function subirFoto() {
     if (fileInput.files.length === 0) return alert("Selecciona una foto primero.");
 
     const archivo = fileInput.files[0];
-    
-    // 1. Extraemos solo la extensión (jpg, png, etc.)
     const extension = archivo.name.split('.').pop();
     
-    // 2. CREAMOS UN NOMBRE PREDETERMINADO
-    // Ejemplo: foto-refrigeracion-1740512345678.jpg
+    // NOMBRE PREDETERMINADO: foto-categoria-fecha.extension
     const nuevoNombre = `foto-${categoria}-${Date.now()}.${extension}`;
-    
-    // 3. Definimos la ruta final (Carpeta/NombreNuevo)
     const rutaDestino = `${categoria}/${nuevoNombre}`;
 
     btn.innerText = "Subiendo...";
     btn.disabled = true;
 
-    const { error } = await jerry_db.storage
-        .from('jerry-guerra')
-        .upload(rutaDestino, archivo);
+    const { error } = await jerry_db.storage.from('jerry-guerra').upload(rutaDestino, archivo);
 
     if (error) {
         alert("Error al subir: " + error.message);
     } else {
         alert("¡Listo! Foto guardada como: " + nuevoNombre);
         fileInput.value = "";
-        cargarDatos(); // Refresca el visor
+        cargarDatos();
     }
-    
     btn.innerText = "Subir a la Web";
     btn.disabled = false;
 }
+
 // ==========================================
 // 4. BORRADO CON CONTRASEÑA
 // ==========================================
 
 function borrarFoto(ruta) {
-    if (!confirm("¿Seguro que quieres eliminar esta imagen?")) return;
-    rutaParaBorrar = ruta;
+    if (!confirm("¿Seguro Jerry?")) return;
+    rutaParaBorrar = ruta; 
     document.getElementById('modal-password').classList.remove('hidden');
     document.getElementById('pass-confirmar-borrado').focus();
 }
@@ -153,21 +140,22 @@ document.getElementById('btn-confirmar-final').onclick = async () => {
 
     cerrarModalPass();
 
-    // --- LA CORRECCIÓN CLAVE ---
-    // decodeURIComponent convierte los códigos de URL (como %20) de vuelta a espacios y puntos reales
-    const rutaParaBorrarReal = decodeURIComponent(rutaParaBorrar);
-
-    console.log("Intentando borrar ruta real:", rutaParaBorrarReal);
-
+    // Intentamos borrar la ruta tal cual
     const { data, error } = await jerry_db.storage
         .from('jerry-guerra')
-        .remove([rutaParaBorrarReal]);
+        .remove([rutaParaBorrar]);
 
     if (error || (data && data.length === 0)) {
-        // Si falla, intentamos con la ruta original por si acaso
-        await jerry_db.storage.from('jerry-guerra').remove([rutaParaBorrar]);
-        alert("Si la foto sigue ahí, es por los puntos en el nombre. Te recomiendo borrarla manualmente en Supabase una sola vez.");
-        cargarDatos();
+        // Segundo intento: Limpiando posibles codificaciones del navegador
+        const rutaDecodificada = decodeURIComponent(rutaParaBorrar);
+        const { data: data2 } = await jerry_db.storage.from('jerry-guerra').remove([rutaDecodificada]);
+        
+        if (data2 && data2.length > 0) {
+            alert("Eliminado correctamente.");
+            cargarDatos();
+        } else {
+            alert("No se pudo borrar por el nombre complejo. Borra esta foto manualmente en el panel de Supabase.");
+        }
     } else {
         alert("¡Eliminado correctamente Jerry!");
         cargarDatos();
@@ -182,17 +170,13 @@ const reiniciarContador = () => {
     clearTimeout(timerInactividad);
     timerInactividad = setTimeout(async () => {
         const { data: { user } } = await jerry_db.auth.getUser();
-        if (user) { 
-            await jerry_db.auth.signOut();
-            location.reload(); 
-        }
+        if (user) { await jerry_db.auth.signOut(); location.reload(); }
     }, 300000);
 };
 
 document.onmousemove = reiniciarContador;
 document.onkeydown = reiniciarContador;
 
-// Hacer funciones globales para el HTML
 window.verificarAcceso = verificarAcceso;
 window.cerrarSesion = cerrarSesion;
 window.subirFoto = subirFoto;
