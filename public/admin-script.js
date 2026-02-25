@@ -1,11 +1,17 @@
-// --- CONFIGURACIÓN DE SUPABASE ---
+// ==========================================
+// 1. CONFIGURACIÓN INICIAL
+// ==========================================
 const URL_SB = 'https://lrjsideqdmiekflpught.supabase.co';
 const KEY_SB = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxyanNpZGVxZG1pZWtmbHB1Z2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjE5NTUsImV4cCI6MjA4NzQzNzk1NX0.fVk9OMKOpV25DMNra-Q5-6iRk3u3ZH6Ye2G-EuBlu28'; 
 const jerry_db = supabase.createClient(URL_SB, KEY_SB);
 
-let rutaParaBorrar = ""; // Variable temporal para el borrado
+let rutaParaBorrar = ""; // Aquí guardamos temporalmente qué foto borrar
+let timerInactividad;
 
-// --- LOGIN Y ACCESO ---
+// ==========================================
+// 2. SISTEMA DE LOGIN Y SESIÓN
+// ==========================================
+
 async function verificarAcceso() {
     const email = "jayber1990@gmail.com";
     const pass = document.getElementById('admin-pass').value;
@@ -29,7 +35,7 @@ async function mostrarPanel() {
         document.getElementById('login-screen')?.classList.add('hidden');
         document.getElementById('admin-panel')?.classList.remove('hidden');
         cargarDatos();
-        reiniciarContador(); // Inicia el tiempo de inactividad
+        reiniciarContador(); // Activa el protector de 5 minutos
     }
 }
 
@@ -38,11 +44,14 @@ async function cerrarSesion() {
     location.reload();
 }
 
-// --- GESTIÓN DE DATOS ---
+// ==========================================
+// 3. CARGA DE DATOS (SOLICITUDES Y FOTOS)
+// ==========================================
+
 async function cargarDatos() {
     console.log("Cargando datos del panel...");
 
-    // A. SOLICITUDES
+    // A. Cargar Solicitudes de la Tabla
     const tabla = document.getElementById('tabla-clientes');
     const { data: solicitudes } = await jerry_db
         .from('solicitudes_presupuesto') 
@@ -65,14 +74,16 @@ async function cargarDatos() {
         tabla.innerHTML = "<p class='p-4 text-gray-400'>No hay solicitudes nuevas.</p>";
     }
 
-    // B. VISOR DE FOTOS
+    // B. Cargar Visor de Fotos del Storage
     const visor = document.getElementById('visor-borrar');
     visor.innerHTML = "<p class='text-sm text-blue-500'>Cargando fotos...</p>";
+    
     const categorias = ['refrigeracion', 'drywall', 'construccion', 'impermeabilizacion'];
     let htmlF = '';
 
     for (const cat of categorias) {
         const { data: fotos } = await jerry_db.storage.from('jerry-guerra').list(cat);
+        
         if (fotos) {
             fotos.filter(f => f.name !== '.emptyFolderPlaceholder').forEach(f => {
                 const { data: url } = jerry_db.storage.from('jerry-guerra').getPublicUrl(`${cat}/${f.name}`);
@@ -80,25 +91,28 @@ async function cargarDatos() {
                     <div class="relative group border rounded-lg overflow-hidden bg-gray-50">
                         <img src="${url.publicUrl}" class="w-full h-24 object-cover">
                         <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <button onclick="borrarFoto('${cat}/${f.name}')" class="bg-red-600 text-white text-[10px] px-2 py-1 rounded shadow">BORRAR</button>
+                            <button onclick="borrarFoto('${cat}/${f.name}')" class="bg-red-600 text-white text-[10px] px-2 py-1 rounded shadow">
+                                BORRAR
+                            </button>
                         </div>
                         <p class="text-[8px] p-1 truncate text-gray-400">${f.name}</p>
                     </div>`;
             });
         }
     }
-    visor.innerHTML = htmlF || "<p class='text-gray-400'>No hay fotos.</p>";
+    visor.innerHTML = htmlF || "<p class='text-gray-400'>No hay fotos en la galería.</p>";
 }
 
-// --- LÓGICA DE BORRADO ---
+// ==========================================
+// 4. LÓGICA DE BORRADO SEGURO (MODAL)
+// ==========================================
+
 async function borrarFoto(ruta) {
-    // 1. Limpiar espacios por si acaso
-    rutaParaBorrar = ruta.trim(); 
-    
-    // 2. Preguntar si está seguro
+    // 1. Pregunta inicial
     if (!confirm("¿Jerry, estás seguro de borrar esta foto?")) return;
 
-    // 3. Mostrar modal
+    // 2. Prepara el modal de contraseña
+    rutaParaBorrar = ruta.trim(); 
     document.getElementById('pass-confirmar-borrado').value = "";
     document.getElementById('modal-password').classList.remove('hidden');
     document.getElementById('pass-confirmar-borrado').focus();
@@ -109,10 +123,12 @@ function cerrarModalPass() {
     rutaParaBorrar = "";
 }
 
+// Acción del botón "Eliminar" dentro del modal
 document.getElementById('btn-confirmar-final').onclick = async () => {
     const passConfirm = document.getElementById('pass-confirmar-borrado').value;
     if (!passConfirm) return alert("Introduce la contraseña");
 
+    // Re-autenticar para validar la clave
     const { data: userData } = await jerry_db.auth.getUser();
     const { error: authError } = await jerry_db.auth.signInWithPassword({
         email: userData.user.email,
@@ -120,25 +136,28 @@ document.getElementById('btn-confirmar-final').onclick = async () => {
     });
 
     if (authError) {
-        alert("Contraseña incorrecta.");
+        alert("Contraseña incorrecta. Acción cancelada.");
         return;
     }
 
+    // Si la clave es correcta, cerramos modal y borramos
     cerrarModalPass(); 
     const { data, error } = await jerry_db.storage.from('jerry-guerra').remove([rutaParaBorrar]);
     
     if (error) {
         alert("Error técnico: " + error.message);
     } else if (data && data.length === 0) {
-        alert("No se encontró el archivo en: " + rutaParaBorrar);
+        alert("Error: No se encontró el archivo en: " + rutaParaBorrar);
     } else {
         alert("¡Foto eliminada con éxito!");
         cargarDatos();
     }
 };
 
-// --- SEGURIDAD E INACTIVIDAD ---
-let timerInactividad;
+// ==========================================
+// 5. SEGURIDAD: TEMPORIZADOR DE INACTIVIDAD
+// ==========================================
+
 const reiniciarContador = () => {
     clearTimeout(timerInactividad);
     timerInactividad = setTimeout(async () => {
@@ -151,21 +170,24 @@ const reiniciarContador = () => {
     }, 300000); // 5 minutos
 };
 
-// Eventos para detectar actividad
+// Detectar movimiento o clics
 document.onmousemove = reiniciarContador;
 document.onkeydown = reiniciarContador;
 document.onclick = reiniciarContador;
 
-// Enter en el modal
+// Permitir dar "Enter" en el modal de clave
 document.getElementById('pass-confirmar-borrado')?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') document.getElementById('btn-confirmar-final').click();
 });
 
-// Hacer funciones globales
+// ==========================================
+// 6. INICIALIZACIÓN GLOBAL
+// ==========================================
+
 window.verificarAcceso = verificarAcceso;
 window.cerrarSesion = cerrarSesion;
 window.borrarFoto = borrarFoto;
 window.cerrarModalPass = cerrarModalPass;
 
-// Al cargar la página
+// Al cargar la página, verificar si ya estaba logueado
 window.onload = mostrarPanel;
