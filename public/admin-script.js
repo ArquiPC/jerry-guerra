@@ -13,10 +13,21 @@ let timerInactividad;
 // ==========================================
 
 async function verificarAcceso() {
-    const email = "jayber1990@gmail.com";
+    
+    const emailInput = "EL_OTRO_CORREO@gmail.com"; // O mejor, añade un campo de email en tu login-screen
     const pass = document.getElementById('admin-pass').value;
-    const { data, error } = await jerry_db.auth.signInWithPassword({ email, password: pass });
-    if (error) { alert("Clave incorrecta Jerry."); } else { mostrarPanel(); }
+
+    // Intentamos iniciar sesión con cualquier usuario registrado en tu Auth de Supabase
+    const { data, error } = await jerry_db.auth.signInWithPassword({ 
+        email: emailInput, 
+        password: pass 
+    });
+
+    if (error) {
+        alert("Acceso denegado: Usuario o clave incorrectos.");
+    } else {
+        mostrarPanel();
+    }
 }
 
 async function mostrarPanel() {
