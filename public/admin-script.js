@@ -119,21 +119,27 @@ async function borrarFoto(ruta) {
     document.getElementById('pass-confirmar-borrado').focus();
 }
 
+// ... (funciones anteriores como cargarDatos y borrarFoto)
+
 function cerrarModalPass() {
     document.getElementById('modal-password').classList.add('hidden');
     rutaParaBorrar = "";
 }
 
-// Configurar el botón "Eliminar" del Modal
+// ======================================================
+// PEGA AQUÍ EL CÓDIGO DEL BOTÓN DE CONFIRMACIÓN
+// ======================================================
 document.getElementById('btn-confirmar-final').onclick = async () => {
     const passConfirm = document.getElementById('pass-confirmar-borrado').value;
     
     if (!passConfirm) return alert("Debes introducir la contraseña");
 
-    // Validar con Supabase
-    const { data: { user } } = await jerry_db.auth.getUser();
+    // 1. Validar identidad del usuario actual
+    const { data: userData } = await jerry_db.auth.getUser();
+    
+    // Intentamos re-autenticar para verificar la contraseña
     const { error: authError } = await jerry_db.auth.signInWithPassword({
-        email: user.email,
+        email: userData.user.email,
         password: passConfirm,
     });
 
@@ -141,6 +147,23 @@ document.getElementById('btn-confirmar-final').onclick = async () => {
         alert("Contraseña incorrecta. Acción cancelada.");
         return;
     }
+
+    // 2. Proceder al borrado si la clave fue correcta
+    cerrarModalPass(); 
+    
+    const { data, error } = await jerry_db.storage.from('jerry-guerra').remove([rutaParaBorrar]);
+    
+    if (error) {
+        alert("Error técnico: " + error.message);
+    } else if (data && data.length === 0) {
+        alert("No se pudo encontrar el archivo en la ruta: " + rutaParaBorrar);
+    } else {
+        alert("¡Foto eliminada con éxito!");
+        cargarDatos(); // Esto refresca la lista de fotos para que ya no aparezca la borrada
+    }
+};
+
+// ... (después pegas el código de inactividad de 5 minutos)
 
     // Proceder al borrado
     cerrarModalPass(); // Ocultar modal mientras borra
